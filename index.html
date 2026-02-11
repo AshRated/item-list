@@ -5,17 +5,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/cyborg/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.min.js"></script>
     
-    <title>AshRated's Command Center</title>
+    <title>AshRated // Command Center</title>
     
     <script type="text/javascript">
-        // LINKS TO YOUR GITHUB FILES
+        // EXACT LINKS TO YOUR FILES
         const itemListURL = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreItems.json";
         const eventListURL = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreEvents.json";
         const shopExtURL = "https://raw.githubusercontent.com/AshRated/item-list/master/ShopExt.json";
@@ -23,16 +24,15 @@
     </script>
 
     <style>
-        /* --- DYNAMIC & FREE FLOWING STYLES --- */
-        
+        /* --- HIGH END ANIMATED BACKGROUND --- */
         body {
-            /* Animated Deep Space Gradient Background */
-            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #141e30);
+            background: linear-gradient(-45deg, #0b0c10, #1f2833, #0f0c29, #24243e);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
-            font-family: 'Roboto', sans-serif;
-            padding-top: 5rem;
-            color: #eee;
+            animation: gradientBG 20s ease infinite;
+            font-family: 'Inter', sans-serif;
+            color: #c5c6c7;
+            padding-top: 80px; /* Space for fixed navbar */
+            min-height: 100vh;
         }
 
         @keyframes gradientBG {
@@ -41,102 +41,141 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Glassmorphism Panels (The "Frosted Glass" look) */
-        .glass-panel {
-            background: rgba(40, 40, 40, 0.65);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        h1, h2, h3, .navbar-brand {
-            font-family: 'Orbitron', sans-serif; /* Sci-fi header font */
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        /* --- TYPOGRAPHY --- */
+        h1, h2, h3, .navbar-brand, .nav-link, .btn-tab {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
             letter-spacing: 2px;
         }
 
-        /* Navbar Styling */
-        .navbar {
-            background: rgba(0, 0, 0, 0.8) !important;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Table Upgrades: Hover Glow & Roundness */
-        .table-container {
+        /* --- GLASSMORPHISM PANELS --- */
+        .glass-panel {
+            background: rgba(31, 40, 51, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(102, 252, 241, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
             border-radius: 15px;
-            overflow: hidden; /* Clips the corners of the table */
-        }
-        
-        .table thead th {
-            background-color: rgba(0, 0, 0, 0.5);
-            border-top: none;
-            border-bottom: 2px solid #00bc8c; /* Green accent line */
-            font-family: 'Orbitron', sans-serif;
+            padding: 25px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
         }
 
-        tbody tr {
-            transition: all 0.2s ease-in-out;
+        /* --- NAVBAR --- */
+        .navbar {
+            background: rgba(11, 12, 16, 0.9) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #45a29e;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
+        .navbar-brand { font-weight: 900; color: #66fcf1 !important; text-shadow: 0 0 10px rgba(102, 252, 241, 0.5); }
+        .nav-link { color: #fff !important; font-size: 0.9rem; transition: color 0.3s; }
+        .nav-link:hover { color: #66fcf1 !important; text-shadow: 0 0 5px #66fcf1; }
 
-        tbody tr:hover {
-            transform: scale(1.01);
-            background-color: rgba(255, 255, 255, 0.1) !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 10;
-            position: relative;
-        }
-
-        /* Twitch Embed Container */
-        .twitch-container {
-            position: relative;
-            width: 100%;
-            height: 500px;
+        /* --- TWITCH EMBED --- */
+        .twitch-wrapper {
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid #444;
-            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            border: 1px solid #45a29e;
+            height: 500px;
+            background: #000;
         }
 
-        /* Custom Scrollbar for a tech feel */
-        ::-webkit-scrollbar { width: 10px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: #00bc8c; }
+        /* --- CUSTOM TABS (No more default buttons) --- */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
 
-        /* Sort Arrow Styling */
+        .btn-tab {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 50px; /* Pill shape */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-tab:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Active Tab Styling - Neon Glows */
+        .btn-tab.active-1 { background: rgba(39, 174, 96, 0.2); border-color: #2ecc71; box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); color: #2ecc71; }
+        .btn-tab.active-2 { background: rgba(192, 57, 43, 0.2); border-color: #e74c3c; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4); color: #e74c3c; }
+        .btn-tab.active-3 { background: rgba(243, 156, 18, 0.2); border-color: #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); color: #f1c40f; }
+        .btn-tab.active-4 { background: rgba(41, 128, 185, 0.2); border-color: #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.4); color: #3498db; }
+
+        /* --- DATA TABLES --- */
+        .table { color: #fff; margin-bottom: 0; }
+        .table thead th {
+            border-top: none;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(102, 252, 241, 0.05);
+            transform: scale(1.01); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .price-tag { font-family: 'Orbitron'; font-weight: bold; }
+        
+        /* Input Fields */
+        .custom-input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #45a29e;
+            color: #fff;
+            border-radius: 8px;
+        }
+        .custom-input:focus {
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(102, 252, 241, 0.3);
+            border-color: #66fcf1;
+        }
+
+        /* --- UTILS --- */
+        .text-neon { color: #66fcf1; }
         .sort { cursor: pointer; user-select: none; }
-        .sort:after { display: inline-block; content: "▼"; font-size: 0.7em; margin-left: 5px; opacity: 0.5; }
-        .sort.asc:after { content: "▲"; opacity: 1; color: #00bc8c; }
-        .sort.desc:after { content: "▼"; opacity: 1; color: #00bc8c; }
+        .sort:after { content: ' ▾'; opacity: 0.5; }
+        .sort.asc:after { content: ' ▴'; opacity: 1; }
+        .sort.desc:after { content: ' ▾'; opacity: 1; }
+
     </style>
 </head>
 
 <body>
+
     <nav class="navbar navbar-expand-md navbar-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">ASH RATED // CMD</a>
+        <div class="container-fluid pl-5 pr-5">
+            <a class="navbar-brand" href="#">ASH RATED <span style="font-size: 0.6em; opacity: 0.7; vertical-align: middle;">// COMMAND CENTER</span></a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarsExampleDefault">
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active"><a class="nav-link" href="#">Store Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="https://www.twitch.tv/ashrated" target="_blank">Open Twitch</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://www.twitch.tv/ashrated" target="_blank">OPEN TWITCH.TV 🡕</a></li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <main role="main">
-        <div class="container-fluid pl-5 pr-5"> <div class="row">
-                <div class="col-lg-9 col-md-12">
-                    <div class="twitch-container">
+        <div class="container-fluid pl-4 pr-4">
+            
+            <div class="row mb-4">
+                <div class="col-lg-9 col-md-12 mb-3 mb-lg-0">
+                    <div class="twitch-wrapper">
                         <iframe src="https://player.twitch.tv/?channel=ashrated&parent=ashrated.github.io&muted=false" 
                                 frameborder="0" 
                                 allowfullscreen="true" 
@@ -147,7 +186,7 @@
                     </div>
                 </div>
                 <div class="col-lg-3 d-none d-lg-block">
-                    <div class="twitch-container">
+                    <div class="twitch-wrapper">
                         <iframe src="https://www.twitch.tv/embed/ashrated/chat?parent=ashrated.github.io&darkpopout" 
                                 frameborder="0" 
                                 scrolling="no" 
@@ -159,96 +198,77 @@
             </div>
 
             <div class="glass-panel text-center">
-                <h1 class="display-4">COLONY MARKETPLACE</h1>
-                <p class="lead">Spend your hard-earned coins to <strong>help (or cause chaos for)</strong> the colony.</p>
+                <h1 class="display-4 text-neon">COLONY MARKETPLACE</h1>
+                <p class="lead" style="opacity: 0.8;">Spend your hard-earned coins to help (or cause chaos for) the colony.</p>
             </div>
 
             <div ng-app='tabs' ng-controller='tabCtrl'>
                 
-                <div class='tabs mb-4 d-flex justify-content-center'>
-                    <div class="btn-group btn-group-lg" data-toggle="buttons">
-                        <label class="btn btn-outline-success active" ng-click='selected=1' style="border-radius: 50px 0 0 50px; min-width: 150px;">
-                            <input type="radio" checked> 📦 ITEMS
-                        </label>
-                        <label class="btn btn-outline-danger" ng-click='selected=2' style="min-width: 150px;">
-                            <input type="radio"> ⚡ EVENTS
-                        </label>
-                        <label class="btn btn-outline-warning" ng-click='selected=3' style="min-width: 150px;">
-                            <input type="radio"> 🧬 TRAITS
-                        </label>
-                        <label class="btn btn-outline-info" ng-click='selected=4' style="border-radius: 0 50px 50px 0; min-width: 150px;">
-                            <input type="radio"> 💬 COMMANDS
-                        </label>
-                    </div>
+                <div class='tab-container'>
+                    <div class="btn-tab" ng-class="{'active-1': selected == 1}" ng-click='selected=1'>📦 RESOURCES</div>
+                    <div class="btn-tab" ng-class="{'active-2': selected == 2}" ng-click='selected=2'>⚡ EVENTS</div>
+                    <div class="btn-tab" ng-class="{'active-3': selected == 3}" ng-click='selected=3'>🧬 TRAITS</div>
+                    <div class="btn-tab" ng-class="{'active-4': selected == 4}" ng-click='selected=4'>💬 COMMANDS</div>
                 </div>
 
                 <div class="row justify-content-center mb-4" ng-show="selected != 4">
-                    <div class="col-md-6">
-                        <div class="input-group">
-                            <div class="input-group-prepend"><span class="input-group-text bg-dark border-secondary">💰 Price Range</span></div>
-                            <input type="number" class="form-control bg-dark text-white border-secondary" id="item-price-min" placeholder="0">
-                            <input type="number" class="form-control bg-dark text-white border-secondary" id="item-price-max" placeholder="No Limit">
-                        </div>
+                    <div class="col-md-6 d-flex align-items-center justify-content-center">
+                        <span class="mr-3 font-weight-bold text-uppercase">Price Range:</span>
+                        <input type="number" class="form-control custom-input mr-2" style="width: 100px;" id="item-price-min" placeholder="0">
+                        <span class="mr-2">-</span>
+                        <input type="number" class="form-control custom-input" style="width: 100px;" id="item-price-max" placeholder="Max">
                     </div>
                 </div>
 
-                <div ng-show='selected == 1' class="glass-panel">
+                <div ng-show='selected == 1' class="glass-panel" style="border-left: 4px solid #2ecc71;">
                     <div id="items">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="text-success">AVAILABLE RESOURCES</h3>
-                            <input type="text" class="form-control w-25 search bg-dark text-white border-secondary" placeholder="Search Items...">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 style="color: #2ecc71;">AVAILABLE ITEMS</h3>
+                            <input type="text" class="form-control w-25 custom-input search" placeholder="Search Items...">
                         </div>
-                        <div class="table-container">
-                            <table class="table table-dark table-hover mb-0">
-                                <thead><tr><th class="sort" data-sort="abr">ITEM NAME</th><th class="sort" data-sort="price">COST</th><th class="sort" data-sort="category">CATEGORY</th></tr></thead>
-                                <tbody class="list"></tbody>
-                            </table>
-                        </div>
+                        <table class="table table-hover">
+                            <thead><tr><th class="sort" data-sort="abr">ITEM NAME</th><th class="sort" data-sort="price">COST</th><th class="sort" data-sort="category">CATEGORY</th></tr></thead>
+                            <tbody class="list"></tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div ng-show='selected == 2' class="glass-panel">
+                <div ng-show='selected == 2' class="glass-panel" style="border-left: 4px solid #e74c3c;">
                     <div id="events">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="text-danger">INCIDENT PROTOCOLS</h3>
-                            <input type="text" class="form-control w-25 search bg-dark text-white border-secondary" placeholder="Search Events...">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 style="color: #e74c3c;">INCIDENT PROTOCOLS</h3>
+                            <input type="text" class="form-control w-25 custom-input search" placeholder="Search Events...">
                         </div>
-                        <div class="table-container">
-                            <table class="table table-dark table-hover mb-0">
-                                <thead><tr><th class="sort" data-sort="abr">EVENT NAME</th><th class="sort" data-sort="price">COST</th><th class="sort" data-sort="karmatype">KARMA TYPE</th></tr></thead>
-                                <tbody class="list"></tbody>
-                            </table>
-                        </div>
+                        <table class="table table-hover">
+                            <thead><tr><th class="sort" data-sort="abr">EVENT NAME</th><th class="sort" data-sort="price">COST</th><th class="sort" data-sort="karmatype">TYPE</th></tr></thead>
+                            <tbody class="list"></tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div ng-show='selected == 3' class="glass-panel">
+                <div ng-show='selected == 3' class="glass-panel" style="border-left: 4px solid #f1c40f;">
                     <div id="traits">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="text-warning">GENETIC MODIFICATIONS</h3>
-                            <input type="text" class="form-control w-25 search bg-dark text-white border-secondary" placeholder="Search Traits...">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 style="color: #f1c40f;">GENETIC MODIFICATION</h3>
+                            <input type="text" class="form-control w-25 custom-input search" placeholder="Search Traits...">
                         </div>
-                        <div class="table-container">
-                            <table class="table table-dark table-hover mb-0">
-                                <thead><tr><th class="sort" data-sort="name">NAME</th><th>DESCRIPTION</th><th class="sort" data-sort="addPrice">ADD COST</th><th class="sort" data-sort="removePrice">REMOVE COST</th></tr></thead>
-                                <tbody class="list"></tbody>
-                            </table>
-                        </div>
+                        <table class="table table-hover">
+                            <thead><tr><th class="sort" data-sort="name">NAME</th><th>DESCRIPTION</th><th class="sort" data-sort="addPrice">ADD</th><th class="sort" data-sort="removePrice">REMOVE</th></tr></thead>
+                            <tbody class="list"></tbody>
+                        </table>
                     </div>
                 </div>
 
-                <div ng-show='selected == 4' class="glass-panel">
+                <div ng-show='selected == 4' class="glass-panel" style="border-left: 4px solid #3498db;">
                     <div id="commands">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h3 class="text-info">SYSTEM COMMANDS</h3>
-                            <input type="text" class="form-control w-25 search bg-dark text-white border-secondary" placeholder="Search Commands...">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 style="color: #3498db;">SYSTEM COMMANDS</h3>
+                            <input type="text" class="form-control w-25 custom-input search" placeholder="Search Commands...">
                         </div>
-                        <div class="table-container">
-                            <table class="table table-dark table-hover mb-0">
-                                <thead><tr><th class="sort" data-sort="usage">COMMAND</th><th class="sort" data-sort="description">DESCRIPTION</th><th class="sort" data-sort="userLevel">PERMISSION</th><th class="sort" data-sort="mod">SOURCE</th></tr></thead>
-                                <tbody class="list"></tbody>
-                            </table>
-                        </div>
+                        <table class="table table-hover">
+                            <thead><tr><th class="sort" data-sort="usage">COMMAND</th><th class="sort" data-sort="description">DESCRIPTION</th><th class="sort" data-sort="userLevel">PERMISSION</th><th class="sort" data-sort="mod">SOURCE</th></tr></thead>
+                            <tbody class="list"></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -263,7 +283,7 @@
         // 1. ITEMS
         let itemList = null;
         $.getJSON(itemListURL, function(data) {
-            var options = { valueNames: ['abr', 'price', 'category'], item: '<tr><td class="abr font-weight-bold text-white lead" style="font-size: 1.1rem;"></td><td class="price text-success font-weight-bold"></td><td class="category text-muted text-uppercase small" style="letter-spacing: 1px;"></td></tr>' };
+            var options = { valueNames: ['abr', 'price', 'category'], item: '<tr><td class="abr font-weight-bold" style="font-size: 1.1rem;"></td><td class="price price-tag text-success"></td><td class="category text-white-50 small text-uppercase" style="letter-spacing: 1px;"></td></tr>' };
             var itemData = [];
             $.each(data.items, function(index, value) { if (value["price"] > 0) itemData.push(value); });
             itemList = new List('items', options, itemData);
@@ -272,7 +292,7 @@
         // 2. EVENTS
         let eventList = null;
         $.getJSON(eventListURL, function(data) {
-            var options = { valueNames: ['abr', 'price', 'karmatype'], item: '<tr><td class="abr font-weight-bold text-white lead" style="font-size: 1.1rem;"></td><td class="price text-danger font-weight-bold"></td><td class="karmatype badge badge-dark mt-2 p-2"></td></tr>' };
+            var options = { valueNames: ['abr', 'price', 'karmatype'], item: '<tr><td class="abr font-weight-bold" style="font-size: 1.1rem;"></td><td class="price price-tag text-danger"></td><td class="karmatype badge badge-dark p-2 mt-1"></td></tr>' };
             var eventData = [];
             $.each(data.incitems, function(index, value) { if (value["price"] > 0) eventData.push(value); });
             eventList = new List('events', options, eventData);
@@ -281,7 +301,7 @@
         // 3. TRAITS
         let traitList = null;
         $.getJSON(shopExtURL, function(data) {
-            var options = { valueNames: ['name', 'description', 'addPrice', 'removePrice'], item: '<tr><td class="name font-weight-bold text-warning lead" style="font-size: 1.1rem;"></td><td class="description text-light"></td><td class="addPrice text-success"></td><td class="removePrice text-danger"></td></tr>' };
+            var options = { valueNames: ['name', 'description', 'addPrice', 'removePrice'], item: '<tr><td class="name font-weight-bold text-warning" style="font-size: 1.1rem;"></td><td class="description text-white-50"></td><td class="addPrice text-success font-weight-bold"></td><td class="removePrice text-danger font-weight-bold"></td></tr>' };
             var combinedData = [];
             if(data.traits){ $.each(data.traits, function(index, value) { combinedData.push({ name: value.defName, description: value.description, addPrice: value.addPrice, removePrice: value.removePrice }); }); }
             if(data.races){ $.each(data.races, function(index, value) { if (value.enabled) { combinedData.push({ name: value.defName + " (Race)", description: value.description, addPrice: value.price, removePrice: "N/A" }); } }); }
@@ -291,7 +311,7 @@
         // 4. COMMANDS
         let commandList = null;
         $.getJSON(commandsURL, function(data) {
-            var options = { valueNames: ['usage', 'description', 'userLevel', 'mod'], item: '<tr><td class="usage font-weight-bold text-info lead" style="font-family: monospace;"></td><td class="description text-light"></td><td class="userLevel badge badge-secondary mt-2"></td><td class="mod text-muted small text-uppercase"></td></tr>' };
+            var options = { valueNames: ['usage', 'description', 'userLevel', 'mod'], item: '<tr><td class="usage font-weight-bold text-info" style="font-family: monospace; font-size: 1.1rem;"></td><td class="description text-white-50"></td><td class="userLevel"></td><td class="mod small text-muted text-uppercase"></td></tr>' };
             var cmdData = [];
             $.each(data, function(index, value) {
                 let modSource = (value.data && value.data.mod) ? value.data.mod : "Unknown";
