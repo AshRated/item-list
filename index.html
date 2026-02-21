@@ -1,274 +1,488 @@
 <!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.2/angular.min.js"></script>
-    
-    <title>AshRated // Colony Command Console</title>
-    
-    <script type="text/javascript">
-        const itemListURL = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreItems.json";
-        const eventListURL = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreEvents.json";
-        const shopExtURL = "https://raw.githubusercontent.com/AshRated/item-list/master/ShopExt.json";
-        const commandsURL = "https://raw.githubusercontent.com/AshRated/item-list/master/commands.json";
-    </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-    <style>
-        /* --- RIMWORLD CONSOLE STYLES --- */
-        body {
-            background-color: #0d1117; /* Darkest space background */
-            font-family: 'Verdana', 'Geneva', sans-serif; /* RimWorld's standard font family */
-            color: #d2d2d2; /* Standard UI text color */
-            padding-top: 70px;
-        }
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-        /* Scanline Overlay for the CRT feel */
-        body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 9999;
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
 
-        /* Glass Panels = RimWorld UI Windows */
-        .rim-window {
-            background-color: #262d33; /* Exact RimWorld UI Background */
-            border: 2px solid #3c444d;
-            border-radius: 4px; /* RimWorld uses very slight rounding, almost square */
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
+  <title>AshRated // Colony Command Console</title>
 
-        .navbar {
-            background-color: #1e2328 !important;
-            border-bottom: 3px solid #3c444d;
-        }
+  <script>
+    // === Remote JSON Sources (GitHub raw) ===
+    const itemListURL   = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreItems.json";
+    // FIX: use StoreIncidents.json (your JS expects data.incitems)
+    const eventListURL  = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreIncidents.json";
+    const shopExtURL    = "https://raw.githubusercontent.com/AshRated/item-list/master/ShopExt.json";
+    const commandsURL   = "https://raw.githubusercontent.com/AshRated/item-list/master/commands.json";
 
-        .navbar-brand {
-            font-weight: bold;
-            color: #d2d2d2 !important;
-            letter-spacing: 1px;
-        }
+    const TWITCH_CHANNEL = "ashrated";
+  </script>
 
-        /* Tabs = Pawn Info Tabs */
-        .btn-tab {
-            background-color: #313a42;
-            color: #d2d2d2;
-            border: 1px solid #4a545e;
-            border-bottom: none;
-            padding: 10px 25px;
-            margin-right: 5px;
-            border-radius: 4px 4px 0 0;
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
+  <style>
+    body {
+      background-color: #0d1117;
+      font-family: Verdana, Geneva, sans-serif;
+      color: #d2d2d2;
+      padding-top: 70px;
+    }
 
-        .btn-tab:hover { background-color: #4a545e; color: #fff; }
-        
-        /* Active States based on RimWorld colors */
-        .btn-tab.active-1 { background-color: #2ecc71; color: #000; font-weight: bold; } /* Green Resources */
-        .btn-tab.active-2 { background-color: #e74c3c; color: #fff; font-weight: bold; } /* Red Events */
-        .btn-tab.active-3 { background-color: #f1c40f; color: #000; font-weight: bold; } /* Yellow Traits */
-        .btn-tab.active-4 { background-color: #3498db; color: #fff; font-weight: bold; } /* Blue Commands */
-        .btn-tab.active-5 { background-color: #9b59b6; color: #fff; font-weight: bold; } /* Purple Guide */
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background:
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 9999;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+    }
 
-        /* Tables */
-        .table { background-color: rgba(0,0,0,0.2); border: 1px solid #3c444d; color: #d2d2d2; }
-        .table thead th { border-bottom: 2px solid #3c444d; color: #a1a1a1; font-size: 0.8rem; }
-        .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
+    .rim-window {
+      background-color: #262d33;
+      border: 2px solid #3c444d;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
 
-        /* Input styling */
-        .rim-input {
-            background-color: #0d1117;
-            border: 1px solid #4a545e;
-            color: #00bc8c; /* Terminal Green */
-            font-family: 'JetBrains Mono', monospace;
-        }
+    .navbar {
+      background-color: #1e2328 !important;
+      border-bottom: 3px solid #3c444d;
+    }
 
-        .twitch-wrapper {
-            border: 4px solid #3c444d;
-            background: #000;
-            height: 500px;
-        }
+    .navbar-brand {
+      font-weight: bold;
+      color: #d2d2d2 !important;
+      letter-spacing: 1px;
+    }
 
-        .cmd-text {
-            font-family: 'JetBrains Mono', monospace;
-            color: #00bc8c;
-        }
+    .btn-tab {
+      background-color: #313a42;
+      color: #d2d2d2;
+      border: 1px solid #4a545e;
+      border-bottom: none;
+      padding: 10px 25px;
+      margin-right: 5px;
+      border-radius: 4px 4px 0 0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      user-select: none;
+    }
 
-        .guide-box {
-            background-color: rgba(0,0,0,0.3);
-            border-left: 4px solid #9b59b6;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-    </style>
+    .btn-tab:hover { background-color: #4a545e; color: #fff; }
+
+    .btn-tab.active-1 { background-color: #2ecc71; color: #000; font-weight: bold; }
+    .btn-tab.active-2 { background-color: #e74c3c; color: #fff; font-weight: bold; }
+    .btn-tab.active-3 { background-color: #f1c40f; color: #000; font-weight: bold; }
+    .btn-tab.active-4 { background-color: #3498db; color: #fff; font-weight: bold; }
+    .btn-tab.active-5 { background-color: #9b59b6; color: #fff; font-weight: bold; }
+
+    .table { background-color: rgba(0,0,0,0.2); border: 1px solid #3c444d; color: #d2d2d2; }
+    .table thead th { border-bottom: 2px solid #3c444d; color: #a1a1a1; font-size: 0.8rem; }
+    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
+
+    .rim-input {
+      background-color: #0d1117;
+      border: 1px solid #4a545e;
+      color: #00bc8c;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .twitch-wrapper {
+      border: 4px solid #3c444d;
+      background: #000;
+      height: 500px;
+    }
+
+    .cmd-text {
+      font-family: 'JetBrains Mono', monospace;
+      color: #00bc8c;
+    }
+
+    .guide-box {
+      background-color: rgba(0,0,0,0.3);
+      border-left: 4px solid #9b59b6;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .status-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #a1a1a1;
+      margin-top: 10px;
+    }
+
+    .error-box {
+      border: 1px solid #e74c3c;
+      background: rgba(231, 76, 60, 0.12);
+      padding: 10px 12px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #e74c3c;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: #8b949e;
+      margin-top: 6px;
+    }
+
+    /* make iframes behave */
+    iframe { border: 0; }
+  </style>
 </head>
 
-<body ng-app='tabs' ng-controller='tabCtrl'>
+<body>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">ASH RATED // COLONY COMMAND CONSOLE</a>
+      <div class="ml-auto">
+        <span class="badge badge-success p-2">SYSTEMS ONLINE</span>
+      </div>
+    </div>
+  </nav>
 
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">ASH RATED // COLONY COMMAND CONSOLE</a>
-            <div class="ml-auto">
-                <span class="badge badge-success p-2">SYSTEMS ONLINE</span>
-            </div>
+  <main class="container-fluid mt-4 px-lg-5">
+    <div class="row">
+      <div class="col-lg-9 mb-3">
+        <div class="twitch-wrapper">
+          <iframe id="twitchPlayer" height="100%" width="100%" allowfullscreen="true"></iframe>
         </div>
-    </nav>
+      </div>
 
-    <main class="container-fluid mt-4 px-lg-5">
-        
-        <div class="row">
-            <div class="col-lg-9 mb-3">
-                <div class="twitch-wrapper">
-                    <iframe src="https://player.twitch.tv/?channel=ashrated&parent=ashrated.github.io&muted=false" height="100%" width="100%" frameborder="0" allowfullscreen="true"></iframe>
-                </div>
-            </div>
-            <div class="col-lg-3 mb-3">
-                <div class="twitch-wrapper">
-                    <iframe src="https://www.twitch.tv/embed/ashrated/chat?parent=ashrated.github.io&darkpopout" height="100%" width="100%" frameborder="0"></iframe>
-                </div>
-            </div>
+      <div class="col-lg-3 mb-3">
+        <div class="twitch-wrapper">
+          <iframe id="twitchChat" height="100%" width="100%"></iframe>
         </div>
+      </div>
+    </div>
 
-        <div class="d-flex flex-wrap mt-2">
-            <div class="btn-tab" ng-class="{'active-1': selected == 1}" ng-click='selected=1'>Inventory</div>
-            <div class="btn-tab" ng-class="{'active-2': selected == 2}" ng-click='selected=2'>Incidents</div>
-            <div class="btn-tab" ng-class="{'active-3': selected == 3}" ng-click='selected=3'>Genetics</div>
-            <div class="btn-tab" ng-class="{'active-4': selected == 4}" ng-click='selected=4'>Terminal</div>
-            <div class="btn-tab" ng-class="{'active-5': selected == 5}" ng-click='selected=5'>Manual</div>
-        </div>
+    <div class="d-flex flex-wrap mt-2">
+      <div class="btn-tab" data-tab="1">Inventory</div>
+      <div class="btn-tab" data-tab="2">Incidents</div>
+      <div class="btn-tab" data-tab="3">Genetics</div>
+      <div class="btn-tab" data-tab="4">Terminal</div>
+      <div class="btn-tab" data-tab="5">Manual</div>
+    </div>
 
-        <div class="rim-window">
-            
-            <div class="row mb-4" ng-show="selected != 5">
-                <div class="col-md-8">
-                    <div class="input-group">
-                        <div class="input-group-prepend"><span class="input-group-text rim-input border-right-0">FILTER_QUERY:</span></div>
-                        <input type="text" id="searchBar" class="form-control rim-input" placeholder="Type name to search...">
-                    </div>
-                </div>
-                <div class="col-md-4" ng-show="selected != 4">
-                    <div class="input-group">
-                        <div class="input-group-prepend"><span class="input-group-text rim-input border-right-0">$</span></div>
-                        <input type="number" id="priceMax" class="form-control rim-input" placeholder="Max Price">
-                    </div>
-                </div>
+    <div class="rim-window">
+      <div class="row mb-4" id="filterRow">
+        <div class="col-md-8">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text rim-input border-right-0">FILTER_QUERY:</span>
             </div>
-
-            <div id="displayArea">
-                
-                <div ng-show="selected == 1" id="items">
-                    <table class="table table-hover">
-                        <thead><tr><th>OBJECT_ID</th><th>MARKET_VALUE</th><th>CATEGORY</th></tr></thead>
-                        <tbody class="list"></tbody>
-                    </table>
-                </div>
-
-                <div ng-show="selected == 2" id="events">
-                    <table class="table table-hover">
-                        <thead><tr><th>INCIDENT_ID</th><th>THREAT_LEVEL_COST</th><th>KARMA</th></tr></thead>
-                        <tbody class="list"></tbody>
-                    </table>
-                </div>
-
-                <div ng-show="selected == 3" id="traits">
-                    <table class="table table-hover">
-                        <thead><tr><th>MOD_ID</th><th>FUNCTION</th><th>ADD_COST</th><th>REM_COST</th></tr></thead>
-                        <tbody class="list"></tbody>
-                    </table>
-                </div>
-
-                <div ng-show="selected == 4" id="commands">
-                    <table class="table table-hover">
-                        <thead><tr><th>INPUT_STRING</th><th>OPERATION</th><th>ACCESS</th></tr></thead>
-                        <tbody class="list"></tbody>
-                    </table>
-                </div>
-
-                <div ng-show="selected == 5">
-                    <h2 class="text-uppercase mb-4" style="color:#9b59b6">Instructional Manual</h2>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="guide-box">
-                                <h5 class="text-success">CREDIT ACCUMULATION</h5>
-                                <p class="small">Watch time generates passive Silver. Subs/Bit donors receive priority multipliers. Check wallet with <span class="cmd-text">!bal</span>.</p>
-                            </div>
-                            <div class="guide-box">
-                                <h5 class="text-info">SUPPLY REQUISITION</h5>
-                                <p class="small">Items drop via Orbital Trade Pod. Avoid dropping directly on colonists. Format: <span class="cmd-text">!buy [item] [qty]</span>.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="guide-box">
-                                <h5 class="text-warning">COLONIST INTEGRATION</h5>
-                                <p class="small">Enter the queue with <span class="cmd-text">!joinqueue</span>. Use <span class="cmd-text">!mypawnskills</span> to monitor your health and efficiency.</p>
-                            </div>
-                            <div class="guide-box">
-                                <h5 class="text-danger">INCIDENT TRIGGER</h5>
-                                <p class="small">Forces game events. Hostile events cost more but generate 'Good Karma'. Format: <span class="cmd-text">!buy [event]</span>.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+            <input type="text" id="searchBar" class="form-control rim-input" placeholder="Type name to search...">
+          </div>
+          <div class="hint">Search applies to the active tab only.</div>
         </div>
 
-        <footer class="text-center pb-5 small opacity-50">
-            SYSTEM VERSION 3.1 // ASHRATED_OS
-        </footer>
-    </main>
+        <div class="col-md-4" id="priceRow">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text rim-input border-right-0">$</span>
+            </div>
+            <input type="number" id="priceMax" class="form-control rim-input" placeholder="Max Price">
+          </div>
+          <div class="hint">Max price filters Inventory / Incidents / Genetics only.</div>
+        </div>
+      </div>
 
-    <script type="text/javascript">
-        // Lists
-        let itemList, eventList, traitList, commandList;
+      <div class="error-box" id="errorBox"></div>
+      <div class="status-line" id="statusLine">BOOT: Initializing data feeds…</div>
 
-        $.getJSON(itemListURL, function(data) {
-            itemList = new List('items', { valueNames: ['abr', 'price', 'category'], item: '<tr><td class="abr font-weight-bold"></td><td class="price text-success"></td><td class="category opacity-50"></td></tr>' }, data.items.filter(i => i.price > 0));
-        });
+      <div id="displayArea">
+        <div id="items" class="tab-panel">
+          <table class="table table-hover">
+            <thead><tr><th>OBJECT_ID</th><th>MARKET_VALUE</th><th>CATEGORY</th></tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
 
-        $.getJSON(eventListURL, function(data) {
-            eventList = new List('events', { valueNames: ['abr', 'price', 'karmatype'], item: '<tr><td class="abr font-weight-bold"></td><td class="price text-danger"></td><td class="karmatype"></td></tr>' }, data.incitems.filter(i => i.price > 0));
-        });
+        <div id="events" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr><th>INCIDENT_ID</th><th>THREAT_LEVEL_COST</th><th>KARMA</th></tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
 
-        $.getJSON(shopExtURL, function(data) {
-            let combined = [];
-            if(data.traits) data.traits.forEach(t => combined.push({ name: t.defName, desc: t.description, add: t.addPrice, rem: t.removePrice }));
-            if(data.races) data.races.filter(r => r.enabled).forEach(r => combined.push({ name: r.defName + " (Race)", desc: r.description, add: r.price, rem: "N/A" }));
-            traitList = new List('traits', { valueNames: ['name', 'desc', 'add', 'rem'], item: '<tr><td class="name text-warning font-weight-bold"></td><td class="desc small"></td><td class="add"></td><td class="rem"></td></tr>' }, combined);
-        });
+        <div id="traits" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr><th>MOD_ID</th><th>FUNCTION</th><th>ADD_COST</th><th>REM_COST</th></tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
 
-        $.getJSON(commandsURL, function(data) {
-            commandList = new List('commands', { valueNames: ['usage', 'description', 'userLevel'], item: '<tr><td class="usage cmd-text"></td><td class="description small"></td><td class="userLevel font-weight-bold"></td></tr>' }, data);
-        });
+        <div id="commands" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr><th>INPUT_STRING</th><th>OPERATION</th><th>ACCESS</th></tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
 
-        // Combined Search and Filter
-        $(document).on('keyup', '#searchBar, #priceMax', function() {
-            let search = $('#searchBar').val();
-            let max = $('#priceMax').val();
-            let filter = (item) => {
-                let p = parseInt(item.values().price || item.values().add || 0);
-                return (max === "" || p <= max);
-            };
-            [itemList, eventList, traitList, commandList].forEach(l => { if(l){ l.search(search); l.filter(filter); }});
-        });
+        <div id="manual" class="tab-panel" style="display:none;">
+          <h2 class="text-uppercase mb-4" style="color:#9b59b6">Instructional Manual</h2>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="guide-box">
+                <h5 class="text-success">CREDIT ACCUMULATION</h5>
+                <p class="small">Watch time generates passive Silver. Subs/Bit donors receive priority multipliers. Check wallet with <span class="cmd-text">!bal</span>.</p>
+              </div>
+              <div class="guide-box">
+                <h5 class="text-info">SUPPLY REQUISITION</h5>
+                <p class="small">Items drop via Orbital Trade Pod. Avoid dropping directly on colonists. Format: <span class="cmd-text">!buy [item] [qty]</span>.</p>
+              </div>
+            </div>
 
-        angular.module('tabs', []).controller('tabCtrl', function($scope) { $scope.selected = "1"; });
-    </script>
+            <div class="col-md-6">
+              <div class="guide-box">
+                <h5 class="text-warning">COLONIST INTEGRATION</h5>
+                <p class="small">Enter the queue with <span class="cmd-text">!joinqueue</span>. Use <span class="cmd-text">!mypawnskills</span> to monitor your health and efficiency.</p>
+              </div>
+              <div class="guide-box">
+                <h5 class="text-danger">INCIDENT TRIGGER</h5>
+                <p class="small">Forces game events. Hostile events cost more but generate 'Good Karma'. Format: <span class="cmd-text">!buy [event]</span>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /displayArea -->
+    </div><!-- /rim-window -->
+
+    <footer class="text-center pb-5 small opacity-50">
+      SYSTEM VERSION 3.2 // ASHRATED_OS
+    </footer>
+  </main>
+
+  <script>
+    // ===== Twitch embed: auto-parent based on current hostname =====
+    (function initTwitchEmbeds() {
+      const host = window.location.hostname || "localhost";
+      // Twitch requires parent to match EXACT domain hosting this page.
+      // If you host on multiple domains, you can add multiple &parent= params manually.
+      const parent = encodeURIComponent(host);
+
+      const playerSrc = `https://player.twitch.tv/?channel=${encodeURIComponent(TWITCH_CHANNEL)}&parent=${parent}&muted=false`;
+      const chatSrc   = `https://www.twitch.tv/embed/${encodeURIComponent(TWITCH_CHANNEL)}/chat?parent=${parent}&darkpopout=true`;
+
+      document.getElementById("twitchPlayer").src = playerSrc;
+      document.getElementById("twitchChat").src = chatSrc;
+    })();
+
+    // ===== Tabs (no Angular) =====
+    const tabs = {
+      selected: 1,
+      panels: {
+        1: "items",
+        2: "events",
+        3: "traits",
+        4: "commands",
+        5: "manual"
+      }
+    };
+
+    function setTab(n) {
+      tabs.selected = n;
+
+      // button styles
+      document.querySelectorAll(".btn-tab").forEach(btn => {
+        const tab = parseInt(btn.getAttribute("data-tab"), 10);
+        btn.classList.remove("active-1","active-2","active-3","active-4","active-5");
+        if (tab === n) btn.classList.add(`active-${n}`);
+      });
+
+      // panels
+      Object.entries(tabs.panels).forEach(([k, id]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = (parseInt(k,10) === n) ? "" : "none";
+      });
+
+      // filter row hide/show rules
+      const filterRow = document.getElementById("filterRow");
+      const priceRow  = document.getElementById("priceRow");
+
+      // Manual: hide all filters
+      if (n === 5) {
+        filterRow.style.display = "none";
+        return;
+      }
+
+      filterRow.style.display = "";
+      // Commands tab: hide max price (price doesn't apply)
+      priceRow.style.display = (n === 4) ? "none" : "";
+      // Re-apply filters to the newly active tab
+      applyFilters();
+    }
+
+    document.querySelectorAll(".btn-tab").forEach(btn => {
+      btn.addEventListener("click", () => setTab(parseInt(btn.getAttribute("data-tab"), 10)));
+    });
+
+    // default tab
+    setTab(1);
+
+    // ===== Lists =====
+    let itemList, eventList, traitList, commandList;
+
+    const statusLine = document.getElementById("statusLine");
+    const errorBox   = document.getElementById("errorBox");
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = "block";
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function setStatus(msg) {
+      statusLine.textContent = msg;
+    }
+
+    function safeNumber(val) {
+      const n = Number(val);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    // Active list helper
+    function getActiveList() {
+      switch (tabs.selected) {
+        case 1: return itemList;
+        case 2: return eventList;
+        case 3: return traitList;
+        case 4: return commandList;
+        default: return null;
+      }
+    }
+
+    function applyFilters() {
+      const list = getActiveList();
+      if (!list) return;
+
+      const search = (document.getElementById("searchBar").value || "").trim();
+      const maxRaw = document.getElementById("priceMax").value;
+      const max = (maxRaw === "" ? null : safeNumber(maxRaw));
+
+      // Search applies to active list
+      list.search(search);
+
+      // Price filter applies only to non-commands lists
+      if (tabs.selected === 4 || max === null) {
+        list.filter(); // clear filter
+        return;
+      }
+
+      list.filter(item => {
+        const v = item.values();
+        // Inventory/Incidents use 'price'; Genetics uses 'add'
+        const p = safeNumber(v.price ?? v.add ?? 0);
+        return p <= max;
+      });
+    }
+
+    document.getElementById("searchBar").addEventListener("keyup", applyFilters);
+    document.getElementById("priceMax").addEventListener("keyup", applyFilters);
+    document.getElementById("priceMax").addEventListener("change", applyFilters);
+
+    // Loaders with error handling
+    function loadJSON(url) {
+      return $.getJSON(url).then(
+        data => data,
+        err => {
+          const detail = err?.status ? `HTTP ${err.status}` : "Network/blocked";
+          throw new Error(`Failed to load ${url} (${detail}).`);
+        }
+      );
+    }
+
+    (async function boot() {
+      clearError();
+      setStatus("BOOT: Connecting to GitHub data feeds…");
+
+      try {
+        // Inventory
+        setStatus("BOOT: Loading Inventory…");
+        const itemsData = await loadJSON(itemListURL);
+        const items = (itemsData?.items || []).filter(i => safeNumber(i.price) > 0);
+
+        itemList = new List("items", {
+          valueNames: ["abr", "price", "category"],
+          item: '<tr><td class="abr font-weight-bold"></td><td class="price text-success"></td><td class="category opacity-50"></td></tr>'
+        }, items);
+
+        // Incidents
+        setStatus("BOOT: Loading Incidents…");
+        const eventsData = await loadJSON(eventListURL);
+        const inc = (eventsData?.incitems || []).filter(i => safeNumber(i.price) > 0);
+
+        eventList = new List("events", {
+          valueNames: ["abr", "price", "karmatype"],
+          item: '<tr><td class="abr font-weight-bold"></td><td class="price text-danger"></td><td class="karmatype"></td></tr>'
+        }, inc);
+
+        // Traits / Races
+        setStatus("BOOT: Loading Genetics…");
+        const ext = await loadJSON(shopExtURL);
+        const combined = [];
+
+        if (Array.isArray(ext?.traits)) {
+          ext.traits.forEach(t => combined.push({
+            name: t.defName,
+            desc: t.description || "",
+            add: safeNumber(t.addPrice),
+            rem: safeNumber(t.removePrice)
+          }));
+        }
+
+        if (Array.isArray(ext?.races)) {
+          ext.races
+            .filter(r => r && r.enabled)
+            .forEach(r => combined.push({
+              name: `${r.defName} (Race)`,
+              desc: r.description || "",
+              add: safeNumber(r.price),
+              rem: "N/A"
+            }));
+        }
+
+        traitList = new List("traits", {
+          valueNames: ["name", "desc", "add", "rem"],
+          item: '<tr><td class="name text-warning font-weight-bold"></td><td class="desc small"></td><td class="add"></td><td class="rem"></td></tr>'
+        }, combined);
+
+        // Commands
+        setStatus("BOOT: Loading Terminal Commands…");
+        const cmds = await loadJSON(commandsURL);
+        const cmdArr = Array.isArray(cmds) ? cmds : [];
+
+        commandList = new List("commands", {
+          valueNames: ["usage", "description", "userLevel"],
+          item: '<tr><td class="usage cmd-text"></td><td class="description small"></td><td class="userLevel font-weight-bold"></td></tr>'
+        }, cmdArr);
+
+        setStatus("SYSTEM: Data feeds online. Ready.");
+        applyFilters();
+      } catch (e) {
+        showError(e.message);
+        setStatus("SYSTEM: One or more feeds failed to load.");
+      }
+    })();
+  </script>
 </body>
 </html>
