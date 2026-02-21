@@ -1,217 +1,903 @@
-<script type="text/javascript">
-  // ===== Twitch embed: auto-parent based on current hostname =====
-  (function initTwitchEmbeds() {
-    var host = window.location.hostname || "ashrated.github.io";
-    var parent = encodeURIComponent(host);
-    var channel = "ashrated";
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    document.getElementById("twitchPlayer").src =
-      "https://player.twitch.tv/?channel=" + encodeURIComponent(channel) +
-      "&parent=" + parent + "&muted=false";
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    document.getElementById("twitchChat").src =
-      "https://www.twitch.tv/embed/" + encodeURIComponent(channel) +
-      "/chat?parent=" + parent + "&darkpopout=true";
-  })();
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
 
-  // ===== Tabs (no Angular) =====
-  var selectedTab = 1;
-  var panels = { 1: "items", 2: "events", 3: "traits", 4: "commands", 5: "manual" };
+  <title>AshRated // Colony Command Console</title>
 
-  function setTab(n) {
-    selectedTab = n;
+  <script type="text/javascript">
+    // ===== GitHub raw JSON feeds =====
+    const itemListURL  = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreItems.json";
+    const eventListURL = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreIncidents.json";
+    const shopExtURL   = "https://raw.githubusercontent.com/AshRated/item-list/master/ShopExt.json";
+    const commandsURL  = "https://raw.githubusercontent.com/AshRated/item-list/master/commands.json";
 
-    // button styles
-    var btns = document.querySelectorAll(".btn-tab");
-    for (var i = 0; i < btns.length; i++) {
-      var tab = parseInt(btns[i].getAttribute("data-tab"), 10);
-      btns[i].classList.remove("active-1","active-2","active-3","active-4","active-5");
-      if (tab === n) btns[i].classList.add("active-" + n);
+    const TWITCH_CHANNEL = "ashrated";
+
+    // ===== Command formats (edit here if your bot differs) =====
+    const CMD = {
+      buy: "!buy",
+      bal: "!bal",
+      addTrait: "!trait",
+      removeTrait: "!removetrait",
+      // If races require a different command in YOUR setup, change this:
+      buyRace: "!buy"
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #0d1117;
+      font-family: 'Verdana','Geneva',sans-serif;
+      color: #d2d2d2;
+      padding-top: 70px;
     }
 
-    // panels
-    for (var k in panels) {
-      if (!panels.hasOwnProperty(k)) continue;
-      var el = document.getElementById(panels[k]);
-      if (!el) continue;
-      el.style.display = (parseInt(k, 10) === n) ? "" : "none";
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background:
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      z-index: 9999;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
     }
 
-    // filter visibility
-    var filterRow = document.getElementById("filterRow");
-    var priceRow = document.getElementById("priceRow");
-
-    if (n === 5) {
-      filterRow.style.display = "none";
-      return;
-    }
-    filterRow.style.display = "";
-    priceRow.style.display = (n === 4) ? "none" : "";
-
-    applyFilters();
-  }
-
-  var tabButtons = document.querySelectorAll(".btn-tab");
-  for (var b = 0; b < tabButtons.length; b++) {
-    tabButtons[b].addEventListener("click", function() {
-      setTab(parseInt(this.getAttribute("data-tab"), 10));
-    });
-  }
-
-  // default tab
-  setTab(1);
-
-  // ===== Lists =====
-  var itemList = null, eventList = null, traitList = null, commandList = null;
-
-  var statusLine = document.getElementById("statusLine");
-  var errorBox = document.getElementById("errorBox");
-
-  function setStatus(msg) { statusLine.textContent = msg; }
-  function showError(msg) { errorBox.textContent = msg; errorBox.style.display = "block"; }
-  function clearError() { errorBox.textContent = ""; errorBox.style.display = "none"; }
-
-  function toNumber(x) {
-    var n = Number(x);
-    return isFinite(n) ? n : 0;
-  }
-
-  function getActiveList() {
-    if (selectedTab === 1) return itemList;
-    if (selectedTab === 2) return eventList;
-    if (selectedTab === 3) return traitList;
-    if (selectedTab === 4) return commandList;
-    return null;
-  }
-
-  function applyFilters() {
-    var list = getActiveList();
-    if (!list) return;
-
-    var search = (document.getElementById("searchBar").value || "").trim();
-    var maxRaw = document.getElementById("priceMax").value;
-    var max = (maxRaw === "" ? null : toNumber(maxRaw));
-
-    list.search(search);
-
-    // No price filtering for Commands tab
-    if (selectedTab === 4 || max === null) {
-      list.filter(); // clears
-      return;
+    .rim-window {
+      background-color: #262d33;
+      border: 2px solid #3c444d;
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
     }
 
-    list.filter(function(item) {
-      var v = item.values();
-      // Inventory/Incidents -> price, Genetics -> add
-      var p = (v.price !== undefined) ? toNumber(v.price)
-            : (v.add !== undefined) ? toNumber(v.add)
-            : 0;
-      return p <= max;
-    });
-  }
+    .navbar {
+      background-color: #1e2328 !important;
+      border-bottom: 3px solid #3c444d;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      color: #d2d2d2 !important;
+      letter-spacing: 1px;
+    }
 
-  document.getElementById("searchBar").addEventListener("keyup", applyFilters);
-  document.getElementById("priceMax").addEventListener("keyup", applyFilters);
-  document.getElementById("priceMax").addEventListener("change", applyFilters);
+    .btn-tab {
+      background-color: #313a42;
+      color: #d2d2d2;
+      border: 1px solid #4a545e;
+      border-bottom: none;
+      padding: 10px 25px;
+      margin-right: 5px;
+      border-radius: 4px 4px 0 0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      user-select: none;
+    }
+    .btn-tab:hover { background-color: #4a545e; color: #fff; }
+    .btn-tab.active-1 { background-color: #2ecc71; color: #000; font-weight: bold; }
+    .btn-tab.active-2 { background-color: #e74c3c; color: #fff; font-weight: bold; }
+    .btn-tab.active-3 { background-color: #f1c40f; color: #000; font-weight: bold; }
+    .btn-tab.active-4 { background-color: #3498db; color: #fff; font-weight: bold; }
+    .btn-tab.active-5 { background-color: #9b59b6; color: #fff; font-weight: bold; }
 
-  // ===== Load JSON (jQuery) with clear errors =====
-  function loadJSON(url, onOk) {
-    return $.getJSON(url)
-      .done(onOk)
-      .fail(function(xhr) {
-        var code = xhr && xhr.status ? ("HTTP " + xhr.status) : "Network/blocked";
-        showError("Failed to load: " + url + " (" + code + ")");
-        setStatus("SYSTEM: One or more feeds failed to load.");
-      });
-  }
+    .table { background-color: rgba(0,0,0,0.2); border: 1px solid #3c444d; color: #d2d2d2; }
+    .table thead th { border-bottom: 2px solid #3c444d; color: #a1a1a1; font-size: 0.8rem; }
+    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
+    .table tbody tr { cursor: pointer; }
 
-  // IMPORTANT: Make sure these constants exist above this script:
-  // itemListURL, eventListURL, shopExtURL, commandsURL
+    .rim-input {
+      background-color: #0d1117;
+      border: 1px solid #4a545e;
+      color: #00bc8c;
+      font-family: 'JetBrains Mono', monospace;
+    }
 
-  clearError();
-  setStatus("BOOT: Connecting to GitHub data feeds…");
+    .twitch-wrapper {
+      border: 4px solid #3c444d;
+      background: #000;
+      height: 500px;
+    }
 
-  // Inventory
-  setStatus("BOOT: Loading Inventory…");
-  loadJSON(itemListURL, function(itemsData) {
-    var items = (itemsData && itemsData.items) ? itemsData.items : [];
-    items = items.filter(function(i) { return toNumber(i.price) > 0; });
+    .cmd-text {
+      font-family: 'JetBrains Mono', monospace;
+      color: #00bc8c;
+    }
 
-    itemList = new List("items", {
-      valueNames: ["abr", "price", "category"],
-      item: '<tr><td class="abr font-weight-bold"></td><td class="price text-success"></td><td class="category opacity-50"></td></tr>'
-    }, items);
+    .guide-box {
+      background-color: rgba(0,0,0,0.3);
+      border-left: 4px solid #9b59b6;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
 
-    applyFilters();
-    setStatus("BOOT: Inventory online.");
-  });
+    .status-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #a1a1a1;
+      margin: 10px 0 0 0;
+    }
 
-  // Incidents
-  setStatus("BOOT: Loading Incidents…");
-  loadJSON(eventListURL, function(eventsData) {
-    var inc = (eventsData && eventsData.incitems) ? eventsData.incitems : [];
-    inc = inc.filter(function(i) { return toNumber(i.price) > 0; });
+    .help-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #c7c7c7;
+      margin: 0 0 10px 0;
+      opacity: 0.9;
+    }
 
-    eventList = new List("events", {
-      valueNames: ["abr", "price", "karmatype"],
-      item: '<tr><td class="abr font-weight-bold"></td><td class="price text-danger"></td><td class="karmatype"></td></tr>'
-    }, inc);
+    .error-box {
+      border: 1px solid #e74c3c;
+      background: rgba(231, 76, 60, 0.12);
+      padding: 10px 12px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #e74c3c;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      display: none;
+    }
 
-    applyFilters();
-    setStatus("BOOT: Incidents online.");
-  });
+    .badge-pill-soft {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid #3c444d;
+      color: #d2d2d2;
+      font-family: 'JetBrains Mono', monospace;
+    }
 
-  // Genetics
-  setStatus("BOOT: Loading Genetics…");
-  loadJSON(shopExtURL, function(ext) {
-    var combined = [];
+    .qty-btn {
+      border: 1px solid #4a545e;
+      background: #0d1117;
+      color: #00bc8c;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 6px 10px;
+      border-radius: 4px;
+      margin-right: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .qty-btn.active { background: #00bc8c; color: #001b14; font-weight: bold; }
 
-    if (ext && ext.traits && ext.traits.length) {
-      for (var i = 0; i < ext.traits.length; i++) {
-        var t = ext.traits[i];
-        combined.push({
-          name: t.defName,
-          desc: t.description || "",
-          add: toNumber(t.addPrice),
-          rem: toNumber(t.removePrice)
+    .fav {
+      font-size: 1rem;
+      opacity: 0.85;
+      user-select: none;
+    }
+    .fav.on { color: #f1c40f; opacity: 1; }
+
+    /* Command builder */
+    .builder {
+      position: sticky;
+      bottom: 10px;
+      z-index: 50;
+    }
+
+    .builder-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .builder-cmd {
+      flex: 1 1 360px;
+      background: #0d1117;
+      border: 1px solid #4a545e;
+      border-radius: 4px;
+      padding: 10px 12px;
+      color: #00bc8c;
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .builder-btn {
+      border: 1px solid #4a545e;
+      background: #313a42;
+      color: #d2d2d2;
+      padding: 10px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .builder-btn:hover { background: #4a545e; color: #fff; }
+
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      z-index: 99999;
+      background: rgba(0,0,0,0.85);
+      border: 1px solid #3c444d;
+      color: #00bc8c;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 10px 12px;
+      border-radius: 6px;
+      display: none;
+      max-width: 420px;
+    }
+
+    iframe { border: 0; }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">ASH RATED // COLONY COMMAND CONSOLE</a>
+      <div class="ml-auto">
+        <span class="badge badge-success p-2">SYSTEMS ONLINE</span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container-fluid mt-4 px-lg-5">
+    <div class="row">
+      <div class="col-lg-9 mb-3">
+        <div class="twitch-wrapper">
+          <iframe id="twitchPlayer" height="100%" width="100%" allowfullscreen="true"></iframe>
+        </div>
+      </div>
+      <div class="col-lg-3 mb-3">
+        <div class="twitch-wrapper">
+          <iframe id="twitchChat" height="100%" width="100%"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap mt-2">
+      <div class="btn-tab" data-tab="1">Inventory</div>
+      <div class="btn-tab" data-tab="2">Incidents</div>
+      <div class="btn-tab" data-tab="3">Genetics</div>
+      <div class="btn-tab" data-tab="4">Terminal</div>
+      <div class="btn-tab" data-tab="5">Manual</div>
+    </div>
+
+    <div class="rim-window">
+      <div id="helpLine" class="help-line">Click a row to auto-build + copy the command.</div>
+
+      <div class="row mb-3" id="filterRow">
+        <div class="col-lg-6 mb-2">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text rim-input border-right-0">FILTER_QUERY:</span>
+            </div>
+            <input type="text" id="searchBar" class="form-control rim-input" placeholder="Type to search...">
+          </div>
+        </div>
+
+        <div class="col-lg-3 mb-2" id="priceRow">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text rim-input border-right-0">$</span>
+            </div>
+            <input type="number" id="priceMax" class="form-control rim-input" placeholder="Max Price">
+          </div>
+        </div>
+
+        <div class="col-lg-3 mb-2">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text rim-input border-right-0">SORT</span>
+            </div>
+            <select id="sortSelect" class="form-control rim-input">
+              <option value="name-asc">Name A→Z</option>
+              <option value="name-desc">Name Z→A</option>
+              <option value="price-asc">Price low→high</option>
+              <option value="price-desc">Price high→low</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Inventory-only qty controls -->
+        <div class="col-12 mt-2" id="qtyRow" style="display:none;">
+          <div class="d-flex flex-wrap align-items-center">
+            <span class="badge badge-pill badge-pill-soft mr-2 p-2">QTY</span>
+            <div class="qty-btn" data-qty="1">1</div>
+            <div class="qty-btn" data-qty="5">5</div>
+            <div class="qty-btn" data-qty="10">10</div>
+            <div class="qty-btn" data-qty="25">25</div>
+            <div class="qty-btn" data-qty="50">50</div>
+            <div class="qty-btn" data-qty="100">100</div>
+            <div class="ml-2" style="min-width:220px;">
+              <input id="qtyCustom" class="form-control rim-input" type="number" min="1" placeholder="Custom qty (optional)">
+            </div>
+            <div class="ml-2 small opacity-75">Tip: click an item to copy <span class="cmd-text">!buy item qty</span></div>
+          </div>
+        </div>
+
+        <!-- Genetics action (traits vs remove trait vs race buy) -->
+        <div class="col-12 mt-2" id="genActionRow" style="display:none;">
+          <div class="d-flex flex-wrap align-items-center">
+            <span class="badge badge-pill badge-pill-soft mr-2 p-2">GENETICS ACTION</span>
+            <select id="genAction" class="form-control rim-input" style="max-width:320px;">
+              <option value="addTrait">Add Trait (!trait)</option>
+              <option value="removeTrait">Remove Trait (!removetrait)</option>
+              <option value="buyRace">Buy Race (!buy)</option>
+            </select>
+            <div class="ml-2 small opacity-75">Click a row to build the selected action.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-box" id="errorBox"></div>
+      <div class="status-line" id="statusLine">BOOT: Initializing…</div>
+
+      <div id="displayArea">
+        <div id="items" class="tab-panel">
+          <table class="table table-hover">
+            <thead><tr><th style="width:44px;"></th><th>OBJECT_ID</th><th>MARKET_VALUE</th><th>CATEGORY</th></tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
+
+        <div id="events" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr><th style="width:44px;"></th><th>INCIDENT_ID</th><th>THREAT_LEVEL_COST</th><th>KARMA</th></tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
+
+        <div id="traits" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr><th style="width:44px;"></th><th>MOD_ID</th><th>FUNCTION</th><th>ADD_COST</th><th>REM_COST</th></tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
+
+        <div id="commands" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr><th style="width:44px;"></th><th>INPUT_STRING</th><th>OPERATION</th><th>ACCESS</th></tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
+
+        <div id="manual" class="tab-panel" style="display:none;">
+          <h2 class="text-uppercase mb-4" style="color:#9b59b6">Instructional Manual</h2>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="guide-box">
+                <h5 class="text-success">CREDIT ACCUMULATION</h5>
+                <p class="small">Watch time generates passive Silver. Check wallet with <span class="cmd-text">!bal</span>.</p>
+              </div>
+              <div class="guide-box">
+                <h5 class="text-info">SUPPLY REQUISITION</h5>
+                <p class="small">Click any item to copy a ready-to-use command. Format: <span class="cmd-text">!buy [item] [qty]</span>.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="guide-box">
+                <h5 class="text-warning">COLONIST INTEGRATION</h5>
+                <p class="small">Enter queue: <span class="cmd-text">!joinqueue</span>. Check your pawn: <span class="cmd-text">!mypawnskills</span>.</p>
+              </div>
+              <div class="guide-box">
+                <h5 class="text-danger">INCIDENT TRIGGER</h5>
+                <p class="small">Click any incident to copy: <span class="cmd-text">!buy [incident]</span>.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /displayArea -->
+    </div><!-- /rim-window -->
+
+    <!-- Command Builder -->
+    <div class="rim-window builder">
+      <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
+        <div class="help-line mb-0">COMMAND BUILDER (click a row to fill this)</div>
+        <div class="small opacity-75">Tip: use <span class="cmd-text">!bal</span> to check balance.</div>
+      </div>
+
+      <div class="builder-row">
+        <div class="builder-cmd" id="builderCmd">Click an item/event/trait/command to build a command…</div>
+        <div class="builder-btn" id="copyBtn">COPY</div>
+        <a class="builder-btn" id="openChatBtn" target="_blank" rel="noopener noreferrer">OPEN TWITCH CHAT</a>
+        <div class="builder-btn" id="clearBtn">CLEAR</div>
+      </div>
+
+      <div class="status-line mt-2" id="builderMeta">—</div>
+    </div>
+
+    <footer class="text-center pb-5 small opacity-50">
+      SYSTEM VERSION 4.0 // ASHRATED_OS
+    </footer>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="text/javascript">
+    // ===== Twitch embed (auto parent) =====
+    (function initTwitchEmbeds() {
+      var host = window.location.hostname || "ashrated.github.io";
+      var parent = encodeURIComponent(host);
+
+      document.getElementById("twitchPlayer").src =
+        "https://player.twitch.tv/?channel=" + encodeURIComponent(TWITCH_CHANNEL) +
+        "&parent=" + parent + "&muted=false";
+
+      document.getElementById("twitchChat").src =
+        "https://www.twitch.tv/embed/" + encodeURIComponent(TWITCH_CHANNEL) +
+        "/chat?parent=" + parent + "&darkpopout=true";
+
+      document.getElementById("openChatBtn").href =
+        "https://www.twitch.tv/popout/" + encodeURIComponent(TWITCH_CHANNEL) + "/chat?popout=";
+    })();
+
+    // ===== Utility =====
+    var statusLine = document.getElementById("statusLine");
+    var errorBox = document.getElementById("errorBox");
+    var helpLine = document.getElementById("helpLine");
+
+    function setStatus(msg) { statusLine.textContent = msg; }
+    function showError(msg) { errorBox.textContent = msg; errorBox.style.display = "block"; }
+    function clearError() { errorBox.textContent = ""; errorBox.style.display = "none"; }
+
+    function toNumber(x) {
+      var n = Number(x);
+      return isFinite(n) ? n : 0;
+    }
+
+    function toast(msg) {
+      var t = document.getElementById("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(function(){ t.style.display = "none"; }, 1800);
+    }
+
+    function safeCopy(text) {
+      if (!text) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          toast("Copied: " + text);
+        }).catch(function() {
+          legacyCopy(text);
         });
+      } else {
+        legacyCopy(text);
       }
     }
+    function legacyCopy(text) {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); toast("Copied: " + text); }
+      catch(e) { toast("Copy failed — select + copy manually."); }
+      document.body.removeChild(ta);
+    }
 
-    if (ext && ext.races && ext.races.length) {
-      for (var r = 0; r < ext.races.length; r++) {
-        var race = ext.races[r];
-        if (race && race.enabled) {
+    // ===== Favourites (localStorage) =====
+    function favKey(tab, id) { return "ashrated_favs_" + tab + "_" + id; }
+    function isFav(tab, id) { return localStorage.getItem(favKey(tab,id)) === "1"; }
+    function setFav(tab, id, on) { localStorage.setItem(favKey(tab,id), on ? "1" : "0"); }
+
+    // ===== Command builder =====
+    var builderCmd = document.getElementById("builderCmd");
+    var builderMeta = document.getElementById("builderMeta");
+
+    function setBuilder(command, meta) {
+      builderCmd.textContent = command || "";
+      builderMeta.textContent = meta || "—";
+      if (command) safeCopy(command);
+    }
+
+    document.getElementById("copyBtn").addEventListener("click", function() {
+      safeCopy(builderCmd.textContent);
+    });
+    document.getElementById("clearBtn").addEventListener("click", function() {
+      builderCmd.textContent = "Click an item/event/trait/command to build a command…";
+      builderMeta.textContent = "—";
+    });
+
+    // ===== Tabs =====
+    var selectedTab = 1;
+    var panels = { 1: "items", 2: "events", 3: "traits", 4: "commands", 5: "manual" };
+
+    function setHelpForTab(n) {
+      if (n === 1) helpLine.textContent = "Inventory: set a QTY, then click an item to copy “!buy item qty”.";
+      else if (n === 2) helpLine.textContent = "Incidents: click an incident to copy “!buy incident”.";
+      else if (n === 3) helpLine.textContent = "Genetics: choose an action (add/remove trait or buy race), then click a row to copy.";
+      else if (n === 4) helpLine.textContent = "Terminal: click a command to copy it. Some require parameters.";
+      else helpLine.textContent = "Manual: quick guide + example commands.";
+    }
+
+    function setTab(n) {
+      selectedTab = n;
+
+      // button styles
+      var btns = document.querySelectorAll(".btn-tab");
+      for (var i = 0; i < btns.length; i++) {
+        var tab = parseInt(btns[i].getAttribute("data-tab"), 10);
+        btns[i].classList.remove("active-1","active-2","active-3","active-4","active-5");
+        if (tab === n) btns[i].classList.add("active-" + n);
+      }
+
+      // panels
+      for (var k in panels) {
+        if (!panels.hasOwnProperty(k)) continue;
+        var el = document.getElementById(panels[k]);
+        if (!el) continue;
+        el.style.display = (parseInt(k, 10) === n) ? "" : "none";
+      }
+
+      // filter visibility
+      var filterRow = document.getElementById("filterRow");
+      var priceRow = document.getElementById("priceRow");
+      var qtyRow = document.getElementById("qtyRow");
+      var genActionRow = document.getElementById("genActionRow");
+
+      if (n === 5) {
+        filterRow.style.display = "none";
+      } else {
+        filterRow.style.display = "";
+        priceRow.style.display = (n === 4) ? "none" : "";
+      }
+
+      qtyRow.style.display = (n === 1) ? "" : "none";
+      genActionRow.style.display = (n === 3) ? "" : "none";
+
+      setHelpForTab(n);
+      applyFiltersToActive();
+      applySortToActive();
+    }
+
+    var tabButtons = document.querySelectorAll(".btn-tab");
+    for (var b = 0; b < tabButtons.length; b++) {
+      tabButtons[b].addEventListener("click", function() {
+        setTab(parseInt(this.getAttribute("data-tab"), 10));
+      });
+    }
+
+    // ===== Qty controls =====
+    var selectedQty = 1;
+    function getQty() {
+      var custom = document.getElementById("qtyCustom").value;
+      if (custom !== "" && toNumber(custom) > 0) return toNumber(custom);
+      return selectedQty;
+    }
+    function setQtyButtonActive() {
+      var btns = document.querySelectorAll(".qty-btn");
+      for (var i = 0; i < btns.length; i++) {
+        var q = toNumber(btns[i].getAttribute("data-qty"));
+        btns[i].classList.toggle("active", q === selectedQty);
+      }
+    }
+    var qtyBtns = document.querySelectorAll(".qty-btn");
+    for (var qb = 0; qb < qtyBtns.length; qb++) {
+      qtyBtns[qb].addEventListener("click", function() {
+        selectedQty = toNumber(this.getAttribute("data-qty"));
+        document.getElementById("qtyCustom").value = "";
+        setQtyButtonActive();
+      });
+    }
+    document.getElementById("qtyCustom").addEventListener("input", function() {
+      // if custom used, no preset is active
+      var btns = document.querySelectorAll(".qty-btn");
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove("active");
+    });
+    setQtyButtonActive();
+
+    // ===== Lists =====
+    var itemList = null, eventList = null, traitList = null, commandList = null;
+
+    function getActiveList() {
+      if (selectedTab === 1) return itemList;
+      if (selectedTab === 2) return eventList;
+      if (selectedTab === 3) return traitList;
+      if (selectedTab === 4) return commandList;
+      return null;
+    }
+
+    function applyFiltersToActive() {
+      var list = getActiveList();
+      if (!list) return;
+
+      var search = (document.getElementById("searchBar").value || "").trim();
+      var maxRaw = document.getElementById("priceMax").value;
+      var max = (maxRaw === "" ? null : toNumber(maxRaw));
+
+      list.search(search);
+
+      // No price filtering for Terminal
+      if (selectedTab === 4 || max === null) {
+        list.filter();
+        return;
+      }
+
+      list.filter(function(item) {
+        var v = item.values();
+        var p = (v.price !== undefined) ? toNumber(v.price)
+              : (v.add !== undefined) ? toNumber(v.add)
+              : 0;
+        return p <= max;
+      });
+    }
+
+    document.getElementById("searchBar").addEventListener("keyup", applyFiltersToActive);
+    document.getElementById("priceMax").addEventListener("keyup", applyFiltersToActive);
+    document.getElementById("priceMax").addEventListener("change", applyFiltersToActive);
+
+    // ===== Sorting =====
+    function applySortToActive() {
+      var list = getActiveList();
+      if (!list) return;
+
+      var mode = document.getElementById("sortSelect").value;
+
+      if (mode === "name-asc") list.sort("name", { order: "asc" });
+      else if (mode === "name-desc") list.sort("name", { order: "desc" });
+      else if (mode === "price-asc") list.sort("price", { order: "asc" });
+      else if (mode === "price-desc") list.sort("price", { order: "desc" });
+    }
+    document.getElementById("sortSelect").addEventListener("change", function() {
+      applySortToActive();
+    });
+
+    // ===== Load JSON =====
+    function loadJSON(url, onOk) {
+      return $.getJSON(url)
+        .done(onOk)
+        .fail(function(xhr) {
+          var code = (xhr && xhr.status) ? ("HTTP " + xhr.status) : "Network/blocked";
+          showError("Failed to load: " + url + " (" + code + ")");
+          setStatus("SYSTEM: One or more feeds failed to load.");
+        });
+    }
+
+    // ===== Row click handlers (build commands) =====
+    function wireRowClicks(containerId, tabName, buildFn) {
+      var root = document.getElementById(containerId);
+      root.addEventListener("click", function(e) {
+        // favourite click
+        if (e.target && e.target.classList && e.target.classList.contains("fav")) {
+          e.stopPropagation();
+          var id = e.target.getAttribute("data-id");
+          var on = !isFav(tabName, id);
+          setFav(tabName, id, on);
+          e.target.classList.toggle("on", on);
+          e.target.textContent = on ? "★" : "☆";
+          return;
+        }
+
+        var tr = e.target.closest("tr");
+        if (!tr) return;
+
+        var id = tr.getAttribute("data-id");
+        if (!id) return;
+
+        buildFn(tr, id);
+      });
+    }
+
+    function favCell(tabName, id) {
+      var on = isFav(tabName, id);
+      return '<td class="fav ' + (on ? 'on' : '') + '" data-id="' + id + '">' + (on ? '★' : '☆') + '</td>';
+    }
+
+    // ===== Boot =====
+    clearError();
+    setStatus("BOOT: Connecting to GitHub data feeds…");
+
+    // Inventory
+    setStatus("BOOT: Loading Inventory…");
+    loadJSON(itemListURL, function(itemsData) {
+      var items = (itemsData && itemsData.items) ? itemsData.items : [];
+      items = items.filter(function(i) { return toNumber(i.price) > 0; });
+
+      // Ensure fields exist for sorting/searching
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].name === undefined) items[i].name = items[i].abr || "";
+      }
+
+      itemList = new List("items", {
+        valueNames: ["name","abr","price","category"],
+        item:
+          '<tr data-id="" class="">' +
+            '<td class="fav"></td>' +
+            '<td class="abr font-weight-bold"></td>' +
+            '<td class="price text-success"></td>' +
+            '<td class="category opacity-50"></td>' +
+          '</tr>'
+      }, items);
+
+      // Inject fav cells + data-id after list renders
+      for (var j = 0; j < itemList.items.length; j++) {
+        var v = itemList.items[j].values();
+        var id = (v.abr || v.name || ("item_" + j));
+        var el = itemList.items[j].elm;
+        el.setAttribute("data-id", id);
+        el.children[0].outerHTML = favCell("items", id);
+      }
+
+      wireRowClicks("items", "items", function(tr, id) {
+        var qty = getQty();
+        var cmd = CMD.buy + " " + id + " " + qty;
+        setBuilder(cmd, "Inventory → " + id + " (qty " + qty + ")");
+      });
+
+      applyFiltersToActive();
+      applySortToActive();
+      setStatus("BOOT: Inventory online.");
+    });
+
+    // Incidents
+    setStatus("BOOT: Loading Incidents…");
+    loadJSON(eventListURL, function(eventsData) {
+      var inc = (eventsData && eventsData.incitems) ? eventsData.incitems : [];
+      inc = inc.filter(function(i) { return toNumber(i.price) > 0; });
+
+      for (var i = 0; i < inc.length; i++) {
+        if (inc[i].name === undefined) inc[i].name = inc[i].abr || "";
+      }
+
+      eventList = new List("events", {
+        valueNames: ["name","abr","price","karmatype"],
+        item:
+          '<tr data-id="">' +
+            '<td class="fav"></td>' +
+            '<td class="abr font-weight-bold"></td>' +
+            '<td class="price text-danger"></td>' +
+            '<td class="karmatype"></td>' +
+          '</tr>'
+      }, inc);
+
+      for (var j = 0; j < eventList.items.length; j++) {
+        var v = eventList.items[j].values();
+        var id = (v.abr || v.name || ("event_" + j));
+        var el = eventList.items[j].elm;
+        el.setAttribute("data-id", id);
+        el.children[0].outerHTML = favCell("events", id);
+      }
+
+      wireRowClicks("events", "events", function(tr, id) {
+        var cmd = CMD.buy + " " + id;
+        setBuilder(cmd, "Incident → " + id);
+      });
+
+      applyFiltersToActive();
+      applySortToActive();
+      setStatus("BOOT: Incidents online.");
+    });
+
+    // Genetics (traits + races)
+    setStatus("BOOT: Loading Genetics…");
+    loadJSON(shopExtURL, function(ext) {
+      var combined = [];
+
+      if (ext && ext.traits && ext.traits.length) {
+        for (var i = 0; i < ext.traits.length; i++) {
+          var t = ext.traits[i];
           combined.push({
-            name: race.defName + " (Race)",
-            desc: race.description || "",
-            add: toNumber(race.price),
-            rem: "N/A"
+            type: "trait",
+            id: (t.name || t.defName || ("trait_" + i)),
+            name: (t.defName || t.name || ""),
+            desc: (t.description || ""),
+            add: toNumber(t.addPrice),
+            rem: toNumber(t.removePrice),
+            price: toNumber(t.addPrice) // for sorting/filtering
           });
         }
       }
-    }
 
-    traitList = new List("traits", {
-      valueNames: ["name", "desc", "add", "rem"],
-      item: '<tr><td class="name text-warning font-weight-bold"></td><td class="desc small"></td><td class="add"></td><td class="rem"></td></tr>'
-    }, combined);
+      if (ext && ext.races && ext.races.length) {
+        for (var r = 0; r < ext.races.length; r++) {
+          var race = ext.races[r];
+          if (race && race.enabled) {
+            combined.push({
+              type: "race",
+              id: (race.name || race.defName || ("race_" + r)),
+              name: (race.defName || race.name || "") + " (Race)",
+              desc: (race.description || ""),
+              add: toNumber(race.price),
+              rem: "N/A",
+              price: toNumber(race.price)
+            });
+          }
+        }
+      }
 
-    applyFilters();
-    setStatus("BOOT: Genetics online.");
-  });
+      traitList = new List("traits", {
+        valueNames: ["type","id","name","desc","add","rem","price"],
+        item:
+          '<tr data-id="" data-type="">' +
+            '<td class="fav"></td>' +
+            '<td class="name text-warning font-weight-bold"></td>' +
+            '<td class="desc small"></td>' +
+            '<td class="add"></td>' +
+            '<td class="rem"></td>' +
+          '</tr>'
+      }, combined);
 
-  // Commands
-  setStatus("BOOT: Loading Terminal Commands…");
-  loadJSON(commandsURL, function(cmds) {
-    var arr = Array.isArray(cmds) ? cmds : [];
+      for (var j = 0; j < traitList.items.length; j++) {
+        var v = traitList.items[j].values();
+        var id = v.id || ("gen_" + j);
+        var el = traitList.items[j].elm;
+        el.setAttribute("data-id", id);
+        el.setAttribute("data-type", v.type || "");
+        el.children[0].outerHTML = favCell("traits", (v.type || "gen") + "_" + id);
+      }
 
-    commandList = new List("commands", {
-      valueNames: ["usage", "description", "userLevel"],
-      item: '<tr><td class="usage cmd-text"></td><td class="description small"></td><td class="userLevel font-weight-bold"></td></tr>'
-    }, arr);
+      wireRowClicks("traits", "traits", function(tr, id) {
+        var type = tr.getAttribute("data-type") || "trait";
+        var action = document.getElementById("genAction").value;
 
-    applyFilters();
-    setStatus("SYSTEM: Data feeds online. Ready.");
-  });
-</script>
+        // If user chooses "buyRace" but clicks a trait, we still build the selected action
+        // (so it behaves predictably).
+        var cmd = "";
+        if (action === "addTrait") cmd = CMD.addTrait + " " + id;
+        else if (action === "removeTrait") cmd = CMD.removeTrait + " " + id;
+        else cmd = CMD.buyRace + " " + id;
+
+        var label = (action === "addTrait") ? "Add Trait"
+                  : (action === "removeTrait") ? "Remove Trait"
+                  : "Buy Race";
+
+        setBuilder(cmd, "Genetics (" + type + ") → " + label + " → " + id);
+      });
+
+      applyFiltersToActive();
+      applySortToActive();
+      setStatus("BOOT: Genetics online.");
+    });
+
+    // Commands
+    setStatus("BOOT: Loading Terminal Commands…");
+    loadJSON(commandsURL, function(cmds) {
+      var arr = Array.isArray(cmds) ? cmds : [];
+
+      // Normalize for list.js fields
+      for (var i = 0; i < arr.length; i++) {
+        arr[i].name = arr[i].usage || arr[i].name || "";
+        arr[i].price = 0; // allow sorting, harmless
+      }
+
+      commandList = new List("commands", {
+        valueNames: ["name","usage","description","userLevel","price"],
+        item:
+          '<tr data-id="">' +
+            '<td class="fav"></td>' +
+            '<td class="usage cmd-text"></td>' +
+            '<td class="description small"></td>' +
+            '<td class="userLevel font-weight-bold"></td>' +
+          '</tr>'
+      }, arr);
+
+      for (var j = 0; j < commandList.items.length; j++) {
+        var v = commandList.items[j].values();
+        var id = (v.usage || ("cmd_" + j));
+        var el = commandList.items[j].elm;
+        el.setAttribute("data-id", id);
+        el.children[0].outerHTML = favCell("commands", id);
+      }
+
+      wireRowClicks("commands", "commands", function(tr, id) {
+        setBuilder(id, "Terminal Command → " + id);
+      });
+
+      applyFiltersToActive();
+      applySortToActive();
+      setStatus("SYSTEM: Data feeds online. Ready.");
+    });
+
+    // Set default tab after initial handlers wired
+    setTab(1);
+  </script>
+</body>
+</html>
