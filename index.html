@@ -13,33 +13,64 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
 
   <script>
-    // === YOUR LIVE JSON FEEDS (GitHub) ===
+    // Live JSON feeds
     const itemListURL     = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreItems.json";
     const incidentListURL = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreIncidents.json";
     const shopExtURL      = "https://raw.githubusercontent.com/AshRated/item-list/master/ShopExt.json";
     const commandsURL     = "https://raw.githubusercontent.com/AshRated/item-list/master/commands.json";
     const viewerDataURL   = "https://raw.githubusercontent.com/AshRated/item-list/master/viewerdata/ViewerData.json";
-    const graveyardURL    = "https://raw.githubusercontent.com/AshRated/item-list/master/viewerdata/Graveyard.json"; // NEW: Graveyard Feed
+    const graveyardURL    = "https://raw.githubusercontent.com/AshRated/item-list/master/viewerdata/Graveyard.json";
 
+    // Twitch embeds must include your GitHub Pages domain as parent
     const twitchChannel   = "ashrated";
-    const twitchParent    = "ashrated.github.io"; // IMPORTANT
+    const twitchParent    = "ashrated.github.io";
 
-    // 🚫 Excluded Users
+    // Excluded users (removed from leaderboards/lookup/panels/pawns/graveyard)
     const excludedUsers = new Set(["ashrated", "ashbotrated"]);
   </script>
 
   <style>
     body { background-color: #0d1117; font-family: Verdana, Geneva, sans-serif; color: #d2d2d2; padding-top: 70px; }
-    
+
     /* Scanline overlay */
-    body::before { content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06)); z-index: 9999; background-size: 100% 2px, 3px 100%; pointer-events: none; }
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background:
+        linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%),
+        linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
+      z-index: 9999;
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+    }
 
     .navbar { background-color: #1e2328 !important; border-bottom: 3px solid #3c444d; }
     .navbar-brand { font-weight: bold; color: #d2d2d2 !important; letter-spacing: 1px; }
 
-    .rim-window { background-color: #262d33; border: 2px solid #3c444d; border-radius: 4px; padding: 18px; margin-bottom: 18px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+    .rim-window {
+      background-color: #262d33;
+      border: 2px solid #3c444d;
+      border-radius: 4px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
 
-    .btn-tab { background-color: #313a42; color: #d2d2d2; border: 1px solid #4a545e; border-bottom: none; padding: 10px 22px; margin-right: 6px; border-radius: 4px 4px 0 0; font-size: .85rem; cursor: pointer; text-transform: uppercase; user-select: none; }
+    .btn-tab {
+      background-color: #313a42;
+      color: #d2d2d2;
+      border: 1px solid #4a545e;
+      border-bottom: none;
+      padding: 10px 22px;
+      margin-right: 6px;
+      border-radius: 4px 4px 0 0;
+      font-size: .85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      user-select: none;
+    }
     .btn-tab:hover { background-color: #4a545e; color:#fff; }
     .btn-tab.active-1 { background-color:#ecf0f1; color:#000; font-weight:bold; }
     .btn-tab.active-2 { background-color:#2ecc71; color:#000; font-weight:bold; }
@@ -47,13 +78,13 @@
     .btn-tab.active-4 { background-color:#f1c40f; color:#000; font-weight:bold; }
     .btn-tab.active-5 { background-color:#3498db; color:#fff; font-weight:bold; }
     .btn-tab.active-6 { background-color:#e67e22; color:#fff; font-weight:bold; }
-    .btn-tab.active-7 { background-color:#95a5a6; color:#000; font-weight:bold; } /* Graveyard */
-    .btn-tab.active-8 { background-color:#9b59b6; color:#fff; font-weight:bold; } /* Manual */
+    .btn-tab.active-7 { background-color:#95a5a6; color:#000; font-weight:bold; }
+    .btn-tab.active-8 { background-color:#9b59b6; color:#fff; font-weight:bold; }
 
     .table { background-color: rgba(0,0,0,0.2); border: 1px solid #3c444d; color:#d2d2d2; }
     .table thead th { border-bottom: 2px solid #3c444d; color:#a1a1a1; font-size:.8rem; cursor: pointer; user-select: none; }
     .table thead th:hover { color: #fff; background: rgba(255,255,255,0.1); }
-    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
+    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); cursor:pointer; }
 
     .rim-input { background-color: #0d1117; border: 1px solid #4a545e; color: #00bc8c; font-family: 'JetBrains Mono', monospace; }
     .twitch-wrapper { border: 4px solid #3c444d; background: #000; height: 500px; }
@@ -64,30 +95,36 @@
     .muted { opacity: .65; }
     .badge-soft { background: rgba(46,204,113,.12); border:1px solid rgba(46,204,113,.35); color:#bff3df; }
 
+    /* Sticky Command Builder */
     .sticky-builder { position: sticky; top: 65px; z-index: 1020; box-shadow: 0 8px 15px rgba(0,0,0,0.6); }
 
-    .toast-mini { position: fixed; bottom: 18px; right: 18px; z-index: 10000; background: rgba(0,0,0,.85); border: 1px solid #3c444d; padding: 10px 12px; border-radius: 6px; display: none; max-width: 360px; }
+    .toast-mini {
+      position: fixed; bottom: 18px; right: 18px; z-index: 10000;
+      background: rgba(0,0,0,.85); border: 1px solid #3c444d;
+      padding: 10px 12px; border-radius: 6px; display: none; max-width: 360px;
+    }
+
     .builder { display:flex; gap:10px; align-items:stretch; flex-wrap:wrap; }
     .builder .builder-input { flex: 1 1 360px; min-width: 260px; }
     .chaos-btn { background:#e74c3c; color:#fff; border:none; padding:8px 12px; margin-top:10px; font-weight:bold; cursor:pointer;}
     .chaos-btn:hover { background:#c0392b; }
 
-    /* FEATURE: Live Delta Animations */
-    @keyframes flashUp { 0% { background-color: rgba(46,204,113,0.5); } 100% { background-color: transparent; } }
-    @keyframes flashDown { 0% { background-color: rgba(231,76,60,0.5); } 100% { background-color: transparent; } }
-    .flash-up { animation: flashUp 1.5s ease-out; }
-    .flash-down { animation: flashDown 1.5s ease-out; }
+    /* Delta animations */
+    @keyframes flashUp { 0% { background-color: rgba(46,204,113,0.35); } 100% { background-color: transparent; } }
+    @keyframes flashDown { 0% { background-color: rgba(231,76,60,0.35); } 100% { background-color: transparent; } }
+    .flash-up { animation: flashUp 1.2s ease-out; }
+    .flash-down { animation: flashDown 1.2s ease-out; }
 
-    /* FEATURE: OBS Overlay Mode */
+    /* OBS overlay mode */
     body.obs-mode { background: transparent !important; padding-top: 10px; }
     body.obs-mode::before { display: none; }
-    body.obs-mode .navbar, 
-    body.obs-mode .twitch-wrapper-row, 
-    body.obs-mode .tabs-container, 
-    body.obs-mode .sticky-builder, 
-    body.obs-mode #filterRow, 
-    body.obs-mode footer, 
-    body.obs-mode .chaos-btn, 
+    body.obs-mode .navbar,
+    body.obs-mode .twitch-wrapper-row,
+    body.obs-mode .tabs-container,
+    body.obs-mode .sticky-builder,
+    body.obs-mode #filterRow,
+    body.obs-mode footer,
+    body.obs-mode .chaos-btn,
     body.obs-mode .obs-hide { display: none !important; }
     body.obs-mode .rim-window { background: rgba(13,17,23,0.85); border: 2px solid #00bc8c; margin-bottom: 8px;}
   </style>
@@ -107,8 +144,16 @@
   <main class="container-fluid mt-4 px-lg-5">
 
     <div class="row twitch-wrapper-row">
-      <div class="col-lg-9 mb-3"><div class="twitch-wrapper"><iframe id="twitchPlayer" src="" height="100%" width="100%" frameborder="0" allowfullscreen="true"></iframe></div></div>
-      <div class="col-lg-3 mb-3"><div class="twitch-wrapper"><iframe id="twitchChat" src="" height="100%" width="100%" frameborder="0"></iframe></div></div>
+      <div class="col-lg-9 mb-3">
+        <div class="twitch-wrapper">
+          <iframe id="twitchPlayer" src="" height="100%" width="100%" frameborder="0" allowfullscreen="true"></iframe>
+        </div>
+      </div>
+      <div class="col-lg-3 mb-3">
+        <div class="twitch-wrapper">
+          <iframe id="twitchChat" src="" height="100%" width="100%" frameborder="0"></iframe>
+        </div>
+      </div>
     </div>
 
     <div class="d-flex flex-wrap mt-2 tabs-container">
@@ -126,7 +171,10 @@
 
       <div class="rim-window sticky-builder" style="margin-bottom:16px;">
         <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
-          <div><div class="text-uppercase muted" style="font-size:.78rem;">Command Builder</div><div class="muted" style="font-size:.85rem;">Click any row to auto-build a command. Then copy & paste into Twitch chat.</div></div>
+          <div>
+            <div class="text-uppercase muted" style="font-size:.78rem;">Command Builder</div>
+            <div class="muted" style="font-size:.85rem;">Click a row to auto-build a command. Copy & paste into chat.</div>
+          </div>
         </div>
         <div class="builder mt-2">
           <input id="builderInput" class="form-control rim-input builder-input" placeholder="Click a row to populate a command…" />
@@ -138,33 +186,65 @@
       </div>
 
       <div class="row mb-3" id="filterRow" style="display:none;">
-        <div class="col-md-8"><div class="input-group"><div class="input-group-prepend"><span class="input-group-text rim-input border-right-0">FILTER_QUERY:</span></div><input type="text" id="searchBar" class="form-control rim-input" placeholder="Type to search current tab…" /></div></div>
-        <div class="col-md-4" id="priceBox"><div class="input-group"><div class="input-group-prepend"><span class="input-group-text rim-input border-right-0">$</span></div><input type="number" id="priceMax" class="form-control rim-input" placeholder="Max Price (optional)" /></div></div>
+        <div class="col-md-8">
+          <div class="input-group">
+            <div class="input-group-prepend"><span class="input-group-text rim-input border-right-0">FILTER_QUERY:</span></div>
+            <input type="text" id="searchBar" class="form-control rim-input" placeholder="Type to search current tab…" />
+          </div>
+        </div>
+        <div class="col-md-4" id="priceBox">
+          <div class="input-group">
+            <div class="input-group-prepend"><span class="input-group-text rim-input border-right-0">$</span></div>
+            <input type="number" id="priceMax" class="form-control rim-input" placeholder="Max Price (optional)" />
+          </div>
+        </div>
       </div>
 
       <div id="displayArea">
-        
+
+        <!-- HOME -->
         <div id="home" class="tab-panel">
           <div class="row">
             <div class="col-md-6 mb-3">
               <div class="rim-window obs-hide mb-3">
                 <h5 class="text-warning">🏆 Pawn of the Day</h5>
-                <div id="potdBox" class="cmd-text" style="font-size:1.2rem;">Awaiting Data...</div>
-                <div class="small muted">Updates daily based on colony logs.</div>
+                <div id="potdBox" class="cmd-text" style="font-size:1.2rem;">Loading…</div>
+                <div class="small muted">Changes daily.</div>
               </div>
+
               <div class="rim-window obs-hide mb-3">
                 <h5 class="text-danger">😈 Most Evil Pawn</h5>
-                <div id="evilBox" class="cmd-text" style="font-size:1.2rem;">Awaiting Data...</div>
-                <div class="small muted">Currently active pawn with highest karma.</div>
+                <div id="evilBox" class="cmd-text" style="font-size:1.2rem;">Loading…</div>
+                <div class="small muted">Highest karma right now.</div>
               </div>
-              
+
               <button class="chaos-btn w-100" onclick="triggerChaos()">🎲 GENERATE RANDOM CHAOS COMMAND</button>
-              
+
+              <!-- Live Vote: streamer tool (kept simple + hidden until active) -->
               <div class="rim-window mt-3 obs-hide">
-                <h5 class="text-info">🗳️ Live Vote</h5>
-                <div id="voteStatus" class="small muted">No active vote.</div>
-                <div class="mt-2 d-flex" style="gap:8px; flex-wrap:wrap;"><button class="btn btn-sm btn-outline-light" id="voteCopyAnnounceBtn" disabled>Copy Announce</button><button class="btn btn-sm btn-outline-light" id="voteCopyEndBtn" disabled>Copy End</button><button class="btn btn-sm btn-outline-danger" id="voteStopBtn" disabled>Stop Vote</button></div>
-                <div class="mt-3 small"><div class="d-flex align-items-center" style="gap:10px; flex-wrap:wrap;"><span class="text-success font-weight-bold">YES:</span> <span id="voteYes">0</span> <button class="btn btn-sm btn-success" id="voteYesBtn" disabled>+1</button> <span class="text-danger font-weight-bold">NO:</span> <span id="voteNo">0</span> <button class="btn btn-sm btn-danger" id="voteNoBtn" disabled>+1</button> <span class="muted">Time:</span> <span id="voteTime">—</span></div></div>
+                <h5 class="text-info">🗳️ Live Vote (Streamer Tool)</h5>
+                <div id="voteStatus" class="small muted">No active vote. Use “Start Vote” on an incident.</div>
+
+                <div class="mt-2 d-flex" style="gap:8px; flex-wrap:wrap;">
+                  <button class="btn btn-sm btn-outline-light" id="voteCopyAnnounceBtn" disabled>Copy Announce</button>
+                  <button class="btn btn-sm btn-outline-light" id="voteCopyEndBtn" disabled>Copy End</button>
+                  <button class="btn btn-sm btn-outline-danger" id="voteStopBtn" disabled>Stop Vote</button>
+                </div>
+
+                <div class="mt-3 small">
+                  <div class="d-flex align-items-center" style="gap:10px; flex-wrap:wrap;">
+                    <span class="text-success font-weight-bold">YES:</span> <span id="voteYes">0</span>
+                    <button class="btn btn-sm btn-success" id="voteYesBtn" disabled>+1</button>
+
+                    <span class="text-danger font-weight-bold">NO:</span> <span id="voteNo">0</span>
+                    <button class="btn btn-sm btn-danger" id="voteNoBtn" disabled>+1</button>
+
+                    <span class="muted">Time:</span> <span id="voteTime">—</span>
+                  </div>
+                  <div class="mt-2 muted">
+                    This panel helps you track a vote while live. It doesn’t reveal backend details.
+                  </div>
+                </div>
               </div>
 
               <div id="raidAlert" class="mt-3 text-danger font-weight-bold" style="font-size:1.2rem;"></div>
@@ -173,255 +253,778 @@
             <div class="col-md-6 mb-3">
               <div class="rim-window obs-hide mb-3">
                 <h5 class="text-info">🔎 Viewer Lookup</h5>
-                <div class="d-flex mb-2"><input type="text" id="viewerSearch" class="form-control rim-input mr-2" placeholder="Twitch Username" /><button class="btn btn-sm btn-primary" id="viewerLookupBtn">Check</button></div>
+                <div class="d-flex mb-2">
+                  <input type="text" id="viewerSearch" class="form-control rim-input mr-2" placeholder="Twitch Username" />
+                  <button class="btn btn-sm btn-primary" id="viewerLookupBtn">Check</button>
+                </div>
                 <div id="viewerResult" class="small muted p-2" style="background:rgba(0,0,0,0.3); border-radius:4px;">Type a name to check stats.</div>
               </div>
-              
+
               <div class="rim-window obs-hide mb-3">
                 <h5 class="text-success">📊 Viewer Panel</h5>
                 <div id="viewerPanel" class="small muted p-2" style="background:rgba(0,0,0,0.3); border-radius:4px;">Click a username on the leaderboards to inspect.</div>
               </div>
-              
+
               <div class="rim-window">
                 <h5 class="text-secondary">💀 Death Tracker (Recent)</h5>
-                <div id="deathBox" class="small muted">No fallen colonists detected in current logs.</div>
+                <div id="deathBox" class="small muted">No recent losses.</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div id="items" class="tab-panel" style="display:none;"><table class="table table-hover"><thead><tr><th class="sort" data-sort="abr">OBJECT_ID ↕</th><th class="sort" data-sort="price">PRICE ↕</th><th class="sort" data-sort="category">CATEGORY ↕</th></tr></thead><tbody class="list"></tbody></table></div>
-        <div id="incidents" class="tab-panel" style="display:none;"><table class="table table-hover"><thead><tr><th class="sort" data-sort="abr">INCIDENT_ID ↕</th><th class="sort" data-sort="price">PRICE ↕</th><th class="sort" data-sort="karmatype">KARMA ↕</th><th>ACTIONS</th></tr></thead><tbody class="list"></tbody></table></div>
-        <div id="traits" class="tab-panel" style="display:none;"><table class="table table-hover"><thead><tr><th class="sort" data-sort="name">MOD_ID ↕</th><th>FUNCTION</th><th class="sort" data-sort="add">ADD ↕</th><th class="sort" data-sort="rem">REM ↕</th><th>ACTIONS</th></tr></thead><tbody class="list"></tbody></table></div>
-        <div id="commands" class="tab-panel" style="display:none;"><table class="table table-hover"><thead><tr><th class="sort" data-sort="usage">INPUT_STRING ↕</th><th>OPERATION</th><th class="sort" data-sort="userLevel">ACCESS ↕</th></tr></thead><tbody class="list"></tbody></table></div>
+        <!-- LIST TABS -->
+        <div id="items" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr>
+              <th class="sort" data-sort="abr">OBJECT_ID ↕</th>
+              <th class="sort" data-sort="price">PRICE ↕</th>
+              <th class="sort" data-sort="category">CATEGORY ↕</th>
+            </tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
 
+        <div id="incidents" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr>
+              <th class="sort" data-sort="abr">INCIDENT_ID ↕</th>
+              <th class="sort" data-sort="price">PRICE ↕</th>
+              <th class="sort" data-sort="karmatype">KARMA ↕</th>
+              <th>ACTIONS</th>
+            </tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
+
+        <div id="traits" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr>
+              <th class="sort" data-sort="name">MOD_ID ↕</th>
+              <th>FUNCTION</th>
+              <th class="sort" data-sort="add">ADD ↕</th>
+              <th class="sort" data-sort="rem">REM ↕</th>
+              <th>ACTIONS</th>
+            </tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
+
+        <div id="commands" class="tab-panel" style="display:none;">
+          <table class="table table-hover">
+            <thead><tr>
+              <th class="sort" data-sort="usage">INPUT_STRING ↕</th>
+              <th>OPERATION</th>
+              <th class="sort" data-sort="userLevel">ACCESS ↕</th>
+            </tr></thead>
+            <tbody class="list"></tbody>
+          </table>
+        </div>
+
+        <!-- LEADERBOARDS -->
         <div id="leaderboards" class="tab-panel" style="display:none;">
           <div class="row">
-            <div class="col-md-6 mb-3"><div class="rim-window"><div class="d-flex align-items-center justify-content-between"><h5 class="text-success mb-2">💰 Top 10 Richest</h5><span class="muted small" id="coinsUpdated">—</span></div><table class="table table-sm mb-0"><thead><tr><th>Viewer</th><th>Coins</th></tr></thead><tbody id="coinsBoard"></tbody></table></div></div>
-            <div class="col-md-6 mb-3"><div class="rim-window"><div class="d-flex align-items-center justify-content-between"><h5 class="text-danger mb-2">🔥 Top 10 Karma</h5><span class="muted small" id="karmaUpdated">—</span></div><table class="table table-sm mb-0"><thead><tr><th>Viewer</th><th>Karma</th></tr></thead><tbody id="karmaBoard"></tbody></table></div></div>
+            <div class="col-md-6 mb-3">
+              <div class="rim-window">
+                <div class="d-flex align-items-center justify-content-between">
+                  <h5 class="text-success mb-2">💰 Top 10 Richest</h5>
+                  <span class="muted small" id="coinsUpdated">—</span>
+                </div>
+                <table class="table table-sm mb-0">
+                  <thead><tr><th>Viewer</th><th>Coins</th></tr></thead>
+                  <tbody id="coinsBoard"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <div class="rim-window">
+                <div class="d-flex align-items-center justify-content-between">
+                  <h5 class="text-danger mb-2">🔥 Top 10 Karma</h5>
+                  <span class="muted small" id="karmaUpdated">—</span>
+                </div>
+                <table class="table table-sm mb-0">
+                  <thead><tr><th>Viewer</th><th>Karma</th></tr></thead>
+                  <tbody id="karmaBoard"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- GRAVEYARD -->
         <div id="graveyard" class="tab-panel" style="display:none;">
           <h2 class="text-uppercase mb-4" style="color:#95a5a6">Hall of the Fallen</h2>
-          <table class="table table-hover"><thead><tr><th>Twitch User</th><th>Colonist Name</th><th>Cause of Death</th></tr></thead><tbody id="graveyardBoard"></tbody></table>
-          <div id="graveyardEmpty" class="muted small mt-2">Connecting to graveyard logs...</div>
+          <table class="table table-hover">
+            <thead><tr><th>Twitch User</th><th>Colonist Name</th><th>Cause</th></tr></thead>
+            <tbody id="graveyardBoard"></tbody>
+          </table>
+          <div id="graveyardEmpty" class="muted small mt-2">Awaiting records…</div>
         </div>
 
+        <!-- MANUAL (restored fuller text without “system facts”) -->
         <div id="manual" class="tab-panel" style="display:none;">
           <h2 class="text-uppercase mb-4" style="color:#9b59b6">Instructional Manual</h2>
           <div class="row">
-            <div class="col-md-6"><div class="guide-box bg-dark border-left border-success p-3 mb-3"><h5 class="text-success">CREDIT ACCUMULATION</h5><p class="small mb-0">Watch time generates passive Silver. Check wallet with <span class="cmd-text">!bal</span>.</p></div></div>
-            <div class="col-md-6"><div class="guide-box bg-dark border-left border-warning p-3 mb-3"><h5 class="text-warning">COLONIST INTEGRATION</h5><p class="small mb-0">Enter the queue with <span class="cmd-text">!joinqueue</span>.</p></div></div>
+            <div class="col-md-6">
+              <div class="rim-window">
+                <h5 class="text-success">CREDIT ACCUMULATION</h5>
+                <p class="small mb-0">Watch time generates currency. Check wallet with <span class="cmd-text">!bal</span>.</p>
+              </div>
+              <div class="rim-window">
+                <h5 class="text-info">SUPPLY REQUISITION</h5>
+                <p class="small mb-0">Request drops. Format: <span class="cmd-text">!buy [item] [qty]</span>.</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="rim-window">
+                <h5 class="text-warning">COLONIST INTEGRATION</h5>
+                <p class="small mb-0">Join the queue with <span class="cmd-text">!joinqueue</span>. Check pawn with <span class="cmd-text">!mypawnskills</span>.</p>
+              </div>
+              <div class="rim-window">
+                <h5 class="text-danger">INCIDENT TRIGGER</h5>
+                <p class="small mb-0">Triggers events. Format: <span class="cmd-text">!buy [incident]</span>.</p>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 muted small">
+            Tip: Click any item/incident/trait/command to auto-fill the Command Builder.
           </div>
         </div>
+
       </div>
     </div>
-    <footer class="text-center pb-5 small muted">SYSTEM VERSION 5.0 // ASHRATED_OS</footer>
+
+    <footer class="text-center pb-5 small muted">SYSTEM VERSION 5.1 // ASHRATED_OS</footer>
   </main>
 
   <div class="toast-mini" id="toast"></div>
 
   <script>
     // =========================
-    // FEATURE 1: OBS OVERLAY MODE
+    // OBS mode
     // =========================
     const isObs = new URLSearchParams(window.location.search).get('obs') === 'true';
-    if(isObs) { document.body.classList.add('obs-mode'); }
+    if (isObs) document.body.classList.add('obs-mode');
 
     // =========================
-    // FEATURE 3: AUDIO SYNTHESIZER
+    // Audio alerts (simple)
     // =========================
     let audioCtx;
-    function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-    document.body.addEventListener('click', initAudio, { once: true }); // Unlock audio on first interaction
+    function initAudio(){ if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    document.body.addEventListener('click', initAudio, { once:true });
 
     function playAlert(type) {
       if(!audioCtx) return;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.connect(gain); gain.connect(audioCtx.destination);
+
       if(type === 'raid') {
-        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
-        gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-      } else if (type === 'death') {
-        osc.type = 'sine'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.8);
-        gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.8);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(420, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(840, audioCtx.currentTime + 0.45);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.45);
+      } else if(type === 'death') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(55, audioCtx.currentTime + 0.75);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.75);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.75);
       }
     }
 
     // =========================
-    // Globals & Caches
+    // REQUIRED: fetch helper (this was missing -> empty tabs)
     // =========================
-    let cachedViewers = []; 
-    let voteState = { active: false, topic: "", endsAt: 0, yes: 0, no: 0, timer: null };
+    async function loadJSON(url) {
+      const res = await fetch(url + "?cb=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      return await res.json();
+    }
 
-    // Delta Tracking (Feature 2)
+    // =========================
+    // Globals / caches
+    // =========================
+    let itemList = null, incidentList = null, traitList = null, commandList = null;
+    let cachedViewers = [];
+
     let memoryCoins = {};
     let memoryKarma = {};
-    
-    // Alert Tracking (Feature 3)
+
     let alertedRaids = new Set();
     let alertedDeaths = new Set();
 
     // =========================
-    // General UI Helpers
+    // UI helpers
     // =========================
-    function setStatus(text, ok=true) { $("#statusText").text(text); $("#statusBadge").toggleClass("badge-success", ok).toggleClass("badge-danger", !ok); $("#statusBadge").text(ok ? "SYSTEMS ONLINE" : "SYSTEM ERROR"); }
-    function toast(msg) { const t = $("#toast"); t.text(msg).stop(true,true).fadeIn(120); setTimeout(() => t.fadeOut(250), 1400); }
-    function setBuilder(cmdText, hintText) { $("#builderInput").val(cmdText); $("#builderHint").text(hintText || "Command ready. Copy & paste into chat."); $(".sticky-builder").css("outline", "2px solid #00bc8c"); setTimeout(() => $(".sticky-builder").css("outline", "none"), 300); }
-    async function copyToClipboard(text) { try { await navigator.clipboard.writeText(text); toast("Copied to clipboard!"); } catch { const inp = document.getElementById("builderInput"); inp.select(); document.execCommand("copy"); toast("Copied (fallback)!"); } }
-    function openTwitchChat() { window.open(`https://www.twitch.tv/popout/${twitchChannel}/chat?popout=`, "_blank"); }
-    function triggerChaos() { const cmds = ["!buy raid", "!buy meteor", "!buy manhunter", "!buy toxicfallout", "!buy eclipse"]; const pick = cmds[Math.floor(Math.random()*cmds.length)]; setBuilder(pick, "🎲 CHAOS SELECTED."); }
-    function escapeHtml(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
-
-    // =========================
-    // Live Vote UI Logic
-    // =========================
-    function setVoteButtons(enabled) { $("#voteCopyAnnounceBtn, #voteCopyEndBtn, #voteStopBtn, #voteYesBtn, #voteNoBtn").prop("disabled", !enabled); }
-    function renderVote() {
-      if (!voteState.active) { $("#voteStatus").text("No active vote."); $("#voteYes, #voteNo").text("0"); $("#voteTime").text("—"); setVoteButtons(false); return; }
-      $("#voteYes").text(voteState.yes); $("#voteNo").text(voteState.no);
-      const msLeft = Math.max(0, voteState.endsAt - Date.now()); $("#voteTime").text(Math.ceil(msLeft / 1000) + "s");
-      $("#voteStatus").html(`Vote active: <span class="cmd-text">${escapeHtml(voteState.topic)}</span><br><span class="muted">Type YES or NO</span>`);
-      setVoteButtons(true); if (msLeft <= 0) endVote(false);
+    function setStatus(text, ok=true) {
+      $("#statusText").text(text);
+      $("#statusBadge").toggleClass("badge-success", ok).toggleClass("badge-danger", !ok);
+      $("#statusBadge").text(ok ? "SYSTEMS ONLINE" : "SYSTEM ERROR");
     }
-    function startVote(topic, durationSec = 30) { voteState.active = true; voteState.topic = topic; voteState.yes = 0; voteState.no = 0; voteState.endsAt = Date.now() + durationSec * 1000; if (voteState.timer) clearInterval(voteState.timer); voteState.timer = setInterval(renderVote, 500); renderVote(); toast(`Vote started: ${topic}`); }
-    function endVote(manualStop = true) { if (!voteState.active) return; voteState.active = false; if (voteState.timer) clearInterval(voteState.timer); voteState.timer = null; const result = voteState.yes === voteState.no ? "TIE" : (voteState.yes > voteState.no ? "YES WINS" : "NO WINS"); $("#voteStatus").html(`Vote ended: <span class="cmd-text">${escapeHtml(voteState.topic)}</span><br>Result: <b class="text-white">${result}</b> (YES ${voteState.yes} / NO ${voteState.no})`); $("#voteTime").text("0s"); setVoteButtons(false); if (manualStop) toast("Vote stopped."); }
+
+    function toast(msg) {
+      const t = $("#toast");
+      t.text(msg).stop(true,true).fadeIn(120);
+      setTimeout(() => t.fadeOut(250), 1400);
+    }
+
+    function setBuilder(cmdText, hintText) {
+      $("#builderInput").val(cmdText);
+      $("#builderHint").text(hintText || "Command ready.");
+      $(".sticky-builder").css("outline", "2px solid #00bc8c");
+      setTimeout(() => $(".sticky-builder").css("outline", "none"), 300);
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast("Copied!");
+      } catch {
+        const inp = document.getElementById("builderInput");
+        inp.focus(); inp.select();
+        document.execCommand("copy");
+        toast("Copied!");
+      }
+    }
+
+    function openTwitchChat() {
+      window.open(`https://www.twitch.tv/popout/${twitchChannel}/chat?popout=`, "_blank");
+    }
+
+    function triggerChaos() {
+      const cmds = ["!buy raid", "!buy meteor", "!buy manhunter", "!buy toxicfallout", "!buy eclipse"];
+      const pick = cmds[Math.floor(Math.random()*cmds.length)];
+      setBuilder(pick, "Chaos selected.");
+      // optional auto-copy
+      copyToClipboard(pick);
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+    }
 
     // =========================
-    // Viewer Panel Logic
+    // Live Vote UI (streamer tool)
+    // =========================
+    let voteState = { active:false, topic:"", endsAt:0, yes:0, no:0, timer:null };
+
+    function setVoteButtons(enabled) {
+      $("#voteCopyAnnounceBtn, #voteCopyEndBtn, #voteStopBtn, #voteYesBtn, #voteNoBtn").prop("disabled", !enabled);
+    }
+
+    function renderVote() {
+      if (!voteState.active) {
+        $("#voteStatus").text("No active vote. Use “Start Vote” on an incident.");
+        $("#voteYes, #voteNo").text("0");
+        $("#voteTime").text("—");
+        setVoteButtons(false);
+        return;
+      }
+
+      $("#voteYes").text(String(voteState.yes));
+      $("#voteNo").text(String(voteState.no));
+
+      const msLeft = Math.max(0, voteState.endsAt - Date.now());
+      $("#voteTime").text(Math.ceil(msLeft / 1000) + "s");
+      $("#voteStatus").html(`Vote active: <span class="cmd-text">${escapeHtml(voteState.topic)}</span>`);
+
+      setVoteButtons(true);
+      if (msLeft <= 0) endVote(false);
+    }
+
+    function startVote(topic, durationSec=30) {
+      voteState.active = true;
+      voteState.topic = topic;
+      voteState.yes = 0;
+      voteState.no = 0;
+      voteState.endsAt = Date.now() + durationSec * 1000;
+
+      if (voteState.timer) clearInterval(voteState.timer);
+      voteState.timer = setInterval(renderVote, 500);
+      renderVote();
+      toast("Vote started.");
+    }
+
+    function endVote(manualStop=true) {
+      if (!voteState.active) return;
+      voteState.active = false;
+      if (voteState.timer) clearInterval(voteState.timer);
+      voteState.timer = null;
+
+      const result = voteState.yes === voteState.no ? "TIE" : (voteState.yes > voteState.no ? "YES WINS" : "NO WINS");
+      $("#voteStatus").html(`Vote ended: <span class="cmd-text">${escapeHtml(voteState.topic)}</span><br>Result: <b class="text-white">${result}</b> (YES ${voteState.yes} / NO ${voteState.no})`);
+      $("#voteTime").text("0s");
+      setVoteButtons(false);
+      if (manualStop) toast("Vote stopped.");
+    }
+
+    // =========================
+    // Viewer panel
     // =========================
     function showViewerPanel(username) {
-      const u = (username || "").trim().toLowerCase(); if (!u) return;
-      if (excludedUsers.has(u)) { $("#viewerPanel").html("<span class='text-danger'>SYSTEM DENIED: User is excluded.</span>"); return; }
+      const u = (username || "").trim().toLowerCase();
+      if (!u) return;
+
+      if (excludedUsers.has(u)) {
+        $("#viewerPanel").text("Viewer not available.");
+        return;
+      }
+
       const v = cachedViewers.find(x => (x.username || "").toLowerCase() === u);
-      if (!v) { $("#viewerPanel").text("Viewer not found in cached data yet."); return; }
-      $("#viewerPanel").html(`User: <span class="cmd-text">${escapeHtml(v.username)}</span><br>🧑 Pawn: <b class="text-white">${escapeHtml(v.pawn || "Not assigned")}</b><br>💰 Coins: <b>${v.coins}</b> | 🔥 Karma: <b>${v.karma}</b>`);
+      if (!v) {
+        $("#viewerPanel").text("Viewer not found yet.");
+        return;
+      }
+
+      $("#viewerPanel").html(
+        `User: <span class="cmd-text">${escapeHtml(v.username)}</span><br>` +
+        `🧑 Pawn: <b class="text-white">${escapeHtml(v.pawn || "Not assigned")}</b><br>` +
+        `💰 Coins: <b>${v.coins}</b> | 🔥 Karma: <b>${v.karma}</b>`
+      );
     }
 
     // =========================
-    // Tabs & Filters
+    // Tabs & filters
     // =========================
-    let activeTab = 1; 
+    let activeTab = 1;
+
     function showTab(tab) {
       activeTab = tab;
-      for(let i=1; i<=8; i++) { $(`#tabBtn${i}`).attr("class", "btn-tab" + (tab===i ? ` active-${i}` : "")); }
-      $("#home").toggle(tab===1); $("#items").toggle(tab===2); $("#incidents").toggle(tab===3); $("#traits").toggle(tab===4); $("#commands").toggle(tab===5); $("#leaderboards").toggle(tab===6); $("#graveyard").toggle(tab===7); $("#manual").toggle(tab===8);
-      $("#filterRow").toggle(tab >= 2 && tab <= 5); $("#priceBox").toggle(tab >= 2 && tab <= 4); 
-      $("#searchBar").val(""); $("#priceMax").val(""); applyFiltersToActive(); applySearchToActive("");
-    }
-    for(let i=1; i<=8; i++) { $(`#tabBtn${i}`).on("click", () => showTab(i)); }
 
-    function getActiveList() { if (activeTab===2) return itemList; if (activeTab===3) return incidentList; if (activeTab===4) return traitList; if (activeTab===5) return commandList; return null; }
-    function applySearchToActive(q) { const L = getActiveList(); if (L) L.search(q); }
-    function applyFiltersToActive() { const L = getActiveList(); if (!L) return; const max = Number($("#priceMax").val()); if (max > 0 && activeTab <= 4) { L.filter(item => Number(item.values().price||0) <= max); } else { L.filter(); } }
+      for (let i=1; i<=8; i++) {
+        $(`#tabBtn${i}`).attr("class", "btn-tab" + (tab===i ? ` active-${i}` : ""));
+      }
+
+      $("#home").toggle(tab===1);
+      $("#items").toggle(tab===2);
+      $("#incidents").toggle(tab===3);
+      $("#traits").toggle(tab===4);
+      $("#commands").toggle(tab===5);
+      $("#leaderboards").toggle(tab===6);
+      $("#graveyard").toggle(tab===7);
+      $("#manual").toggle(tab===8);
+
+      $("#filterRow").toggle(tab >= 2 && tab <= 5);
+      $("#priceBox").toggle(tab >= 2 && tab <= 4);
+
+      $("#searchBar").val("");
+      $("#priceMax").val("");
+      applyFiltersToActive();
+      applySearchToActive("");
+    }
+
+    for (let i=1; i<=8; i++) {
+      $(`#tabBtn${i}`).on("click", () => showTab(i));
+    }
+
+    function getActiveList() {
+      if (activeTab===2) return itemList;
+      if (activeTab===3) return incidentList;
+      if (activeTab===4) return traitList;
+      if (activeTab===5) return commandList;
+      return null;
+    }
+
+    function applySearchToActive(q) {
+      const L = getActiveList();
+      if (L) L.search(q);
+    }
+
+    function applyFiltersToActive() {
+      const L = getActiveList();
+      if (!L) return;
+
+      const maxStr = ($("#priceMax").val() || "").trim();
+      const max = maxStr === "" ? null : Number(maxStr);
+
+      if (max !== null && (Number.isNaN(max) || max < 0)) {
+        L.filter();
+        return;
+      }
+
+      if (activeTab >= 2 && activeTab <= 4) {
+        L.filter(item => {
+          const p = Number(item.values().price || 0);
+          return (max === null) ? true : (p <= max);
+        });
+      } else {
+        L.filter();
+      }
+    }
 
     // =========================
-    // Core Data Parsing
+    // Viewer + Leaderboards + Pawns + Alerts
     // =========================
     async function loadViewerData() {
       try {
-        const res = await fetch(viewerDataURL + "?cb=" + Date.now(), { cache: "no-store" });
-        const data = await res.json();
+        const data = await loadJSON(viewerDataURL);
         if (!data || !data.viewers) return;
 
-        const viewers = (Array.isArray(data.viewers) ? data.viewers : []).filter(v => !excludedUsers.has((v.username||"").toLowerCase()));
-        cachedViewers = viewers.map(v => ({ username: (v.username || "").trim(), coins: Number(v.coins || 0), karma: Number(v.karma || 0), pawn: (v.pawnName || v.pawn || v.colonist || "").trim(), raw: v }));
+        const viewers = (Array.isArray(data.viewers) ? data.viewers : [])
+          .filter(v => !excludedUsers.has((v.username||"").toLowerCase()));
 
-        // Render Leaderboards (With Delta Animation Logic)
-        const topCoins = [...viewers].sort((a,b) => (b.coins||0) - (a.coins||0)).slice(0,10);
-        const topKarma = [...viewers].sort((a,b) => (b.karma||0) - (a.karma||0)).slice(0,10);
+        cachedViewers = viewers.map(v => ({
+          username: (v.username || "").trim(),
+          coins: Number(v.coins || 0),
+          karma: Number(v.karma || 0),
+          pawn: (v.pawnName || v.pawn || v.colonist || "").trim(),
+          raw: v
+        }));
+
+        const topCoins = [...cachedViewers].sort((a,b)=>b.coins-a.coins).slice(0,10);
+        const topKarma = [...cachedViewers].sort((a,b)=>b.karma-a.karma).slice(0,10);
 
         $("#coinsBoard").html(topCoins.map(v => {
-          let u = v.username.toLowerCase(); let c = Number(v.coins||0); let animClass = "";
-          if(memoryCoins[u] !== undefined) { if(c > memoryCoins[u]) animClass = "flash-up"; else if(c < memoryCoins[u]) animClass = "flash-down"; }
+          const u = v.username.toLowerCase();
+          const c = v.coins;
+          let anim = "";
+          if (memoryCoins[u] !== undefined) anim = (c > memoryCoins[u]) ? "flash-up" : (c < memoryCoins[u] ? "flash-down" : "");
           memoryCoins[u] = c;
-          return `<tr class="${animClass}"><td><span class="viewer-link cmd-text" data-user="${escapeHtml(v.username)}">${escapeHtml(v.username)}</span></td><td class="text-success">${c}</td></tr>`;
+
+          return `<tr class="${anim}">
+            <td><span class="viewer-link cmd-text" data-user="${escapeHtml(v.username)}">${escapeHtml(v.username)}</span></td>
+            <td class="text-success">${c}</td>
+          </tr>`;
         }).join(""));
 
         $("#karmaBoard").html(topKarma.map(v => {
-          let u = v.username.toLowerCase(); let k = Number(v.karma||0); let animClass = "";
-          if(memoryKarma[u] !== undefined) { if(k > memoryKarma[u]) animClass = "flash-up"; else if(k < memoryKarma[u]) animClass = "flash-down"; }
+          const u = v.username.toLowerCase();
+          const k = v.karma;
+          let anim = "";
+          if (memoryKarma[u] !== undefined) anim = (k > memoryKarma[u]) ? "flash-up" : (k < memoryKarma[u] ? "flash-down" : "");
           memoryKarma[u] = k;
-          return `<tr class="${animClass}"><td><span class="viewer-link cmd-text" data-user="${escapeHtml(v.username)}">${escapeHtml(v.username)}</span></td><td class="text-danger">${k}</td></tr>`;
+
+          return `<tr class="${anim}">
+            <td><span class="viewer-link cmd-text" data-user="${escapeHtml(v.username)}">${escapeHtml(v.username)}</span></td>
+            <td class="text-danger">${k}</td>
+          </tr>`;
         }).join(""));
-        
+
         $("#coinsUpdated, #karmaUpdated").text(`Updated ${new Date().toLocaleTimeString()}`);
 
-        // Update Pawns
-        const pawns = viewers.filter(x => x.pawnName);
-        if(pawns.length > 0) { let hash = 0; let today = new Date().toDateString(); for(let i=0; i<today.length; i++) hash+=today.charCodeAt(i); let potd = pawns[hash % pawns.length]; $("#potdBox").html(`${escapeHtml(potd.username)} <span class="text-white">→</span> ${escapeHtml(potd.pawnName)}`); } 
-        let evil = [...viewers].sort((a,b) => (b.karma||0) - (a.karma||0))[0];
-        if(evil) { $("#evilBox").html(`${escapeHtml(evil.username)} <span class="text-white">→</span> ${escapeHtml(evil.pawnName || "No Pawn")} (${evil.karma})`); }
+        // Pawn of the Day
+        const pawns = cachedViewers.filter(x => x.pawn);
+        if (pawns.length > 0) {
+          let hash = 0;
+          const today = new Date().toDateString();
+          for (let i=0; i<today.length; i++) hash += today.charCodeAt(i);
+          const potd = pawns[hash % pawns.length];
+          $("#potdBox").html(`${escapeHtml(potd.username)} <span class="text-white">→</span> ${escapeHtml(potd.pawn)}`);
+        } else {
+          $("#potdBox").text("No colonists registered yet.");
+        }
 
-        // Raid Detection + Audio Cue
-        let currentRaids = new Set(viewers.filter(x => x.karma > 5000).map(x => x.username));
-        currentRaids.forEach(user => { if (!alertedRaids.has(user)) { playAlert('raid'); alertedRaids.add(user); } });
-        alertedRaids.forEach(user => { if (!currentRaids.has(user)) alertedRaids.delete(user); }); // Cleanup
-        let raid = viewers.find(x => x.karma > 5000);
-        $("#raidAlert").text(raid ? `⚠️ RAID WARNING: ${escapeHtml(raid.username)} HAS EXTREME KARMA!` : "");
+        // Evil pawn
+        if (cachedViewers.length > 0) {
+          const evil = [...cachedViewers].sort((a,b)=>b.karma-a.karma || b.coins-a.coins)[0];
+          $("#evilBox").html(`${escapeHtml(evil.username)} <span class="text-white">→</span> ${escapeHtml(evil.pawn || "No Pawn")} (${evil.karma})`);
+        } else {
+          $("#evilBox").text("No karma data yet.");
+        }
 
-        // Death Tracker + Audio Cue
-        let deadPawnsList = viewers.filter(x => x.isDead || x.status === "dead" || x.status === "deceased");
-        let currentDeaths = new Set(deadPawnsList.map(x => x.username));
-        currentDeaths.forEach(user => { if (!alertedDeaths.has(user)) { playAlert('death'); alertedDeaths.add(user); } });
-        alertedDeaths.forEach(user => { if (!currentDeaths.has(user)) alertedDeaths.delete(user); }); // Cleanup
-        if(deadPawnsList.length > 0) { $("#deathBox").html(deadPawnsList.map(d => `<div class="text-danger">☠️ ${escapeHtml(d.username)} (${escapeHtml(d.pawnName)})</div>`).join("")); }
+        // Raid alert (kept generic)
+        const raid = cachedViewers.find(x => x.karma > 5000);
+        $("#raidAlert").text(raid ? `⚠️ WARNING: ${escapeHtml(raid.username)} has extreme karma!` : "");
 
-      } catch (e) { console.log("ViewerData error:", e); }
+        // Raid audio once-per-appearance
+        const currentRaids = new Set(cachedViewers.filter(x => x.karma > 5000).map(x => x.username));
+        currentRaids.forEach(user => { if (!alertedRaids.has(user)) { playAlert("raid"); alertedRaids.add(user); } });
+        alertedRaids.forEach(user => { if (!currentRaids.has(user)) alertedRaids.delete(user); });
+
+        // Death tracker (if your feed supports these fields)
+        const deadList = cachedViewers.filter(x => x.raw && (x.raw.isDead || x.raw.status === "dead" || x.raw.status === "deceased"));
+        const currentDeaths = new Set(deadList.map(x => x.username));
+        currentDeaths.forEach(user => { if (!alertedDeaths.has(user)) { playAlert("death"); alertedDeaths.add(user); } });
+        alertedDeaths.forEach(user => { if (!currentDeaths.has(user)) alertedDeaths.delete(user); });
+
+        if (deadList.length > 0) {
+          $("#deathBox").html(deadList.map(d => `<div class="text-danger">☠️ ${escapeHtml(d.username)} (${escapeHtml(d.pawn || "Unknown")})</div>`).join(""));
+        } else {
+          $("#deathBox").text("No recent losses.");
+        }
+
+      } catch (e) {
+        console.log("ViewerData error:", e);
+      }
     }
 
-    // FEATURE 4: Graveyard Feed Loader
+    // Graveyard loader (filtered)
     async function loadGraveyard() {
       try {
         const res = await fetch(graveyardURL + "?cb=" + Date.now(), { cache: "no-store" });
-        if(!res.ok) { $("#graveyardEmpty").text("Graveyard log is empty or not yet created by Mix It Up."); return; }
+        if (!res.ok) {
+          $("#graveyardEmpty").text("No records available yet.");
+          $("#graveyardBoard").html("");
+          return;
+        }
+
         const data = await res.json();
         const fallen = Array.isArray(data.fallen) ? data.fallen : (Array.isArray(data) ? data : []);
-        if(fallen.length > 0) {
+        const filtered = fallen.filter(f => !excludedUsers.has((f.username||"").toLowerCase()));
+
+        if (filtered.length > 0) {
           $("#graveyardEmpty").hide();
-          $("#graveyardBoard").html(fallen.map(f => `<tr><td class="cmd-text">${escapeHtml(f.username||"Unknown")}</td><td class="text-white font-weight-bold">${escapeHtml(f.pawnName||"Unknown")}</td><td class="text-danger">${escapeHtml(f.cause||"Tragic Circumstances")}</td></tr>`).join(""));
-        } else { $("#graveyardEmpty").text("No colonists have perished... yet."); }
-      } catch (e) { $("#graveyardEmpty").text("Awaiting Graveyard feed creation."); }
+          $("#graveyardBoard").html(filtered.map(f =>
+            `<tr>
+              <td class="cmd-text">${escapeHtml(f.username||"Unknown")}</td>
+              <td class="text-white font-weight-bold">${escapeHtml(f.pawnName||"Unknown")}</td>
+              <td class="text-danger">${escapeHtml(f.cause||"Unknown")}</td>
+            </tr>`
+          ).join(""));
+        } else {
+          $("#graveyardEmpty").show().text("No records available yet.");
+          $("#graveyardBoard").html("");
+        }
+      } catch (e) {
+        $("#graveyardEmpty").text("Awaiting records…");
+      }
     }
 
-    $("#viewerLookupBtn").on("click", () => { const name = ($("#viewerSearch").val()||"").trim().toLowerCase(); if(!name) return; if (excludedUsers.has(name)) return $("#viewerResult").html("<span class='text-danger'>User excluded.</span>"); const v = cachedViewers.find(x => (x.username||"").toLowerCase() === name); if (!v) return $("#viewerResult").text("User not found."); $("#viewerResult").html(`User: <span class="cmd-text">${escapeHtml(v.username)}</span> | 🧑 Pawn: <b class="text-white">${escapeHtml(v.pawn||"Not assigned")}</b><br>💰 Coins: <b>${v.coins}</b> | 🔥 Karma: <b>${v.karma}</b>`); });
-    $("#viewerSearch").on("keydown", function(e){ if(e.key==="Enter") $("#viewerLookupBtn").click(); });
-
+    // =========================
+    // Boot: load lists + wire handlers
+    // =========================
     async function boot() {
-      if(!isObs) {
+      // Twitch embeds (skip in OBS mode)
+      if (!isObs) {
         $("#twitchPlayer").attr("src", `https://player.twitch.tv/?channel=${twitchChannel}&parent=${twitchParent}&muted=false`);
         $("#twitchChat").attr("src", `https://www.twitch.tv/embed/${twitchChannel}/chat?parent=${twitchParent}&darkpopout`);
       }
 
-      try { const data = await loadJSON(itemListURL); const n = (data.items||[]).filter(i=>Number(i.price)>0).map(i=>({abr:i.abr||i.name||i.defName||"", price:Number(i.price), category:i.category||i.type||"—"})); itemList = new List("items", {valueNames:["abr","price","category"], item:`<tr><td class="abr font-weight-bold" style="cursor:pointer;"></td><td class="price text-success"></td><td class="category muted"></td></tr>`}, n); } catch(e){}
-      try { const data = await loadJSON(incidentListURL); const n = (data.incitems||[]).filter(i=>Number(i.price)>0).map(i=>({abr:i.abr||i.name||i.defName||"", price:Number(i.price), karmatype:i.karmatype||i.karmaType||i.karma||"—"})); incidentList = new List("incidents", {valueNames:["abr","price","karmatype"], item:`<tr><td class="abr font-weight-bold" style="cursor:pointer;"></td><td class="price text-danger"></td><td class="karmatype"></td><td><button class="btn btn-sm btn-outline-info vote-btn">Start Vote</button></td></tr>`}, n); } catch(e){}
-      try { const data = await loadJSON(shopExtURL); const comb=[]; if(data.traits) data.traits.forEach(t=>comb.push({name:t.defName||t.name, desc:t.description, add:Number(t.addPrice||0), rem:Number(t.removePrice||0), price:Number(t.addPrice||0)})); if(data.races) data.races.filter(r=>r.enabled).forEach(r=>comb.push({name:(r.defName||r.name)+" (Race)", desc:r.description, add:Number(r.price||0), rem:"N/A", price:Number(r.price||0)})); traitList = new List("traits", {valueNames:["name","desc","add","rem","price"], item:`<tr><td class="name text-warning font-weight-bold" style="cursor:pointer;"></td><td class="desc small"></td><td class="add text-success"></td><td class="rem text-danger"></td><td><button class="btn btn-sm btn-success install-btn mr-1">Install</button><button class="btn btn-sm btn-danger remove-btn">Remove</button></td></tr>`}, comb); } catch(e){}
-      try { const data = await loadJSON(commandsURL); const arr=Array.isArray(data)?data:[]; arr.forEach(c=>{c.name=c.usage||c.name||""; c.price=0;}); commandList = new List("commands", {valueNames:["usage","description","userLevel"], item:`<tr><td class="usage cmd-text" style="cursor:pointer;"></td><td class="description small"></td><td class="userLevel font-weight-bold"></td></tr>`}, arr); } catch(e){}
+      const failed = [];
 
-      $("#items tbody").on("click", "td.abr", function() { setBuilder(`!buy ${$(this).text().trim()} 1`, `Item selected.`); });
-      $("#incidents tbody").on("click", "td.abr", function() { setBuilder(`!buy ${$(this).text().trim()}`, `Incident selected.`); });
-      $("#traits tbody").on("click", "td.name", function() { setBuilder(`!trait ${$(this).text().trim()}`, `Genetics selected.`); });
-      $("#commands tbody").on("click", "td.usage", function() { setBuilder($(this).text().trim(), `Terminal command selected.`); });
+      setStatus("BOOT: Loading Inventory…");
+      try {
+        const data = await loadJSON(itemListURL);
+        const items = (data && Array.isArray(data.items)) ? data.items : [];
+        const normalized = items
+          .filter(i => Number(i.price || 0) > 0)
+          .map(i => ({
+            abr: i.abr || i.name || i.defName || "",
+            price: Number(i.price || 0),
+            category: i.category || i.type || "—"
+          }));
 
-      $("#incidents tbody").on("click", ".vote-btn", function() { const n = $(this).closest("tr").find(".abr").text().trim(); setBuilder(`!vote ${n}`, `Ready.`); startVote(`Incident: ${n}`, 30); });
-      $("#voteYesBtn").on("click", () => { if(voteState.active){ voteState.yes++; renderVote(); } }); $("#voteNoBtn").on("click", () => { if(voteState.active){ voteState.no++; renderVote(); } }); $("#voteStopBtn").on("click", () => endVote(true));
-      $("#voteCopyAnnounceBtn").on("click", async () => { if(voteState.active) await copyToClipboard(`VOTE STARTED: ${voteState.topic} — YES or NO (ends in 30s)!`); }); $("#voteCopyEndBtn").on("click", async () => { await copyToClipboard(`VOTE ENDED: ${voteState.topic} — YES ${voteState.yes} / NO ${voteState.no}`); });
-      $("#traits tbody").on("click", ".install-btn", function() { setBuilder(`!trait add ${$(this).closest("tr").find(".name").text().trim().replace(" (Race)", "")}`, `Install Gene`); });
-      $("#traits tbody").on("click", ".remove-btn", function() { setBuilder(`!trait remove ${$(this).closest("tr").find(".name").text().trim().replace(" (Race)", "")}`, `Remove Gene`); });
+        itemList = new List("items", {
+          valueNames: ["abr","price","category"],
+          item: `<tr>
+                  <td class="abr font-weight-bold" style="cursor:pointer;"></td>
+                  <td class="price text-success"></td>
+                  <td class="category muted"></td>
+                </tr>`
+        }, normalized);
 
-      $(document).on("click", ".viewer-link", function() { showViewerPanel($(this).data("user")); });
-      $("#searchBar").on("keyup", function() { applySearchToActive($(this).val()||""); }); $("#priceMax").on("keyup change", function() { applyFiltersToActive(); });
-      $("#copyBtn").on("click", async () => { const v=$("#builderInput").val(); if(v) await copyToClipboard(v); }); $("#copyOpenBtn").on("click", async () => { const v=$("#builderInput").val(); if(v) { await copyToClipboard(v); openTwitchChat(); }}); $("#clearBtn").on("click", () => setBuilder("", "Waiting..."));
+      } catch(e) {
+        console.log(e);
+        failed.push("Inventory");
+      }
 
-      showTab(1); loadViewerData(); loadGraveyard(); setInterval(loadViewerData, 5000); setInterval(loadGraveyard, 30000); 
-      setStatus("SYSTEM: Data feeds online. Ready.");
+      setStatus("BOOT: Loading Incidents…");
+      try {
+        const data = await loadJSON(incidentListURL);
+        const inc = (data && Array.isArray(data.incitems)) ? data.incitems : [];
+        const normalized = inc
+          .filter(i => Number(i.price || 0) > 0)
+          .map(i => ({
+            abr: i.abr || i.name || i.defName || "",
+            price: Number(i.price || 0),
+            karmatype: i.karmatype || i.karmaType || i.karma || "—"
+          }));
+
+        incidentList = new List("incidents", {
+          valueNames: ["abr","price","karmatype"],
+          item: `<tr>
+                  <td class="abr font-weight-bold" style="cursor:pointer;"></td>
+                  <td class="price text-danger"></td>
+                  <td class="karmatype"></td>
+                  <td><button class="btn btn-sm btn-outline-info vote-btn">Start Vote</button></td>
+                </tr>`
+        }, normalized);
+
+      } catch(e) {
+        console.log(e);
+        failed.push("Incidents");
+      }
+
+      setStatus("BOOT: Loading Genetics…");
+      try {
+        const data = await loadJSON(shopExtURL);
+        const combined = [];
+
+        if (data && Array.isArray(data.traits)) {
+          data.traits.forEach(t => combined.push({
+            name: t.defName || t.name || "",
+            desc: t.description || "",
+            add: Number(t.addPrice || 0),
+            rem: Number(t.removePrice || 0),
+            price: Number(t.addPrice || 0)
+          }));
+        }
+
+        if (data && Array.isArray(data.races)) {
+          data.races.filter(r => r.enabled).forEach(r => combined.push({
+            name: (r.defName || r.name || "") + " (Race)",
+            desc: r.description || "",
+            add: Number(r.price || 0),
+            rem: "N/A",
+            price: Number(r.price || 0)
+          }));
+        }
+
+        traitList = new List("traits", {
+          valueNames: ["name","desc","add","rem","price"],
+          item: `<tr>
+                  <td class="name text-warning font-weight-bold" style="cursor:pointer;"></td>
+                  <td class="desc small"></td>
+                  <td class="add text-success"></td>
+                  <td class="rem text-danger"></td>
+                  <td>
+                    <button class="btn btn-sm btn-success install-btn mr-1">Install</button>
+                    <button class="btn btn-sm btn-danger remove-btn">Remove</button>
+                  </td>
+                </tr>`
+        }, combined);
+
+      } catch(e) {
+        console.log(e);
+        failed.push("Genetics");
+      }
+
+      setStatus("BOOT: Loading Terminal…");
+      try {
+        const data = await loadJSON(commandsURL);
+        const arr = Array.isArray(data) ? data : [];
+        arr.forEach(c => { c.name = c.usage || c.name || ""; });
+
+        commandList = new List("commands", {
+          valueNames: ["usage","description","userLevel"],
+          item: `<tr>
+                  <td class="usage cmd-text" style="cursor:pointer;"></td>
+                  <td class="description small"></td>
+                  <td class="userLevel font-weight-bold"></td>
+                </tr>`
+        }, arr);
+
+      } catch(e) {
+        console.log(e);
+        failed.push("Terminal");
+      }
+
+      // Row click handlers (safe delegated)
+      $("#items tbody").on("click", "td.abr", function() {
+        setBuilder(`!buy ${$(this).text().trim()} 1`, "Item selected.");
+      });
+
+      $("#incidents tbody").on("click", "td.abr", function() {
+        setBuilder(`!buy ${$(this).text().trim()}`, "Incident selected.");
+      });
+
+      $("#incidents tbody").on("click", ".vote-btn", function() {
+        const n = $(this).closest("tr").find(".abr").text().trim();
+        setBuilder(`!vote ${n}`, "Vote command ready.");
+        startVote(`Incident: ${n}`, 30);
+      });
+
+      $("#traits tbody").on("click", "td.name", function() {
+        setBuilder(`!trait ${$(this).text().trim()}`, "Genetics selected.");
+      });
+
+      $("#traits tbody").on("click", ".install-btn", function() {
+        const name = $(this).closest("tr").find(".name").text().trim().replace(" (Race)", "");
+        setBuilder(`!trait add ${name}`, "Install command ready.");
+      });
+
+      $("#traits tbody").on("click", ".remove-btn", function() {
+        const name = $(this).closest("tr").find(".name").text().trim().replace(" (Race)", "");
+        setBuilder(`!trait remove ${name}`, "Remove command ready.");
+      });
+
+      $("#commands tbody").on("click", "td.usage", function() {
+        setBuilder($(this).text().trim(), "Terminal command selected.");
+      });
+
+      // Viewer lookup (uses cached viewers, no extra fetch, no “system facts”)
+      $("#viewerLookupBtn").on("click", () => {
+        const name = ($("#viewerSearch").val() || "").trim().toLowerCase();
+        if (!name) return $("#viewerResult").text("Please enter a username.");
+
+        if (excludedUsers.has(name)) {
+          $("#viewerResult").text("Viewer not available.");
+          return;
+        }
+
+        const v = cachedViewers.find(x => (x.username||"").toLowerCase() === name);
+        if (!v) return $("#viewerResult").text("Viewer not found yet.");
+
+        $("#viewerResult").html(
+          `User: <span class="cmd-text">${escapeHtml(v.username)}</span> | 🧑 Pawn: <b class="text-white">${escapeHtml(v.pawn||"Not assigned")}</b><br>` +
+          `💰 Coins: <b>${v.coins}</b> | 🔥 Karma: <b>${v.karma}</b>`
+        );
+      });
+
+      $("#viewerSearch").on("keydown", e => { if (e.key === "Enter") $("#viewerLookupBtn").click(); });
+
+      // Clickable leaderboard names
+      $(document).on("click", ".viewer-link", function() {
+        showViewerPanel($(this).data("user"));
+      });
+
+      // Vote controls
+      $("#voteYesBtn").on("click", () => { if(voteState.active){ voteState.yes++; renderVote(); } });
+      $("#voteNoBtn").on("click",  () => { if(voteState.active){ voteState.no++; renderVote(); } });
+      $("#voteStopBtn").on("click", () => endVote(true));
+      $("#voteCopyAnnounceBtn").on("click", async () => {
+        if(!voteState.active) return;
+        await copyToClipboard(`VOTE STARTED: ${voteState.topic} — YES or NO (ends in 30s)!`);
+      });
+      $("#voteCopyEndBtn").on("click", async () => {
+        await copyToClipboard(`VOTE ENDED: ${voteState.topic} — YES ${voteState.yes} / NO ${voteState.no}`);
+      });
+
+      // Filters
+      $("#searchBar").on("keyup", function() { applySearchToActive($(this).val() || ""); });
+      $("#priceMax").on("input change", function() { applyFiltersToActive(); });
+
+      // Builder buttons
+      $("#copyBtn").on("click", async () => {
+        const v = $("#builderInput").val() || "";
+        if (!v.trim()) return toast("Nothing to copy.");
+        await copyToClipboard(v);
+      });
+
+      $("#copyOpenBtn").on("click", async () => {
+        const v = $("#builderInput").val() || "";
+        if (!v.trim()) return toast("Nothing to copy.");
+        await copyToClipboard(v);
+        openTwitchChat();
+      });
+
+      $("#clearBtn").on("click", () => setBuilder("", "Waiting for selection…"));
+
+      // Start on Home
+      showTab(1);
+
+      // Start data loops
+      await loadViewerData();
+      await loadGraveyard();
+      setInterval(loadViewerData, 5000);
+      setInterval(loadGraveyard, 30000);
+
+      // Final status
+      if (failed.length) setStatus(`Online with errors: ${failed.join(", ")}`, false);
+      else setStatus("SYSTEM: Ready.");
     }
+
+    // Boot
     boot();
   </script>
 </body>
