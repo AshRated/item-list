@@ -1,7 +1,7 @@
 {
 	"items" : [
 	{
-		"abr": "textbook",
+		"abr": "textbook",	
 		"price": 267,
 		"category": "Books",
 		"defname": "TextBook"
@@ -1736,13 +1736,13 @@
 	},
 	{
 		"abr": "rat",
-		"price": 58,
+		"price": 1500,
 		"category": "Animals",
 		"defname": "Rat"
 	},
 	{
 		"abr": "boomrat",
-		"price": 167,
+		"price": 2500,
 		"category": "Animals",
 		"defname": "Boomrat"
 	},
@@ -3975,3 +3975,4 @@
 	],
 	"total": 662
 }
+
