@@ -115,6 +115,19 @@
     .flash-up { animation: flashUp 1.2s ease-out; }
     .flash-down { animation: flashDown 1.2s ease-out; }
 
+    /* Graveyard resurrect badge */
+    .badge-res {
+      display:inline-block;
+      padding:2px 8px;
+      border-radius:999px;
+      font-size:.72rem;
+      border:1px solid rgba(46,204,113,.45);
+      background: rgba(46,204,113,.12);
+      color:#bff3df;
+      margin-left:8px;
+      vertical-align: middle;
+    }
+
     /* OBS overlay mode */
     body.obs-mode { background: transparent !important; padding-top: 10px; }
     body.obs-mode::before { display: none; }
@@ -207,45 +220,18 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <div class="rim-window obs-hide mb-3">
-                <h5 class="text-warning">🏆 Pawn of the Day</h5>
+                <h5 class="text-success">🏆 Most Helpful Pawn</h5>
                 <div id="potdBox" class="cmd-text" style="font-size:1.2rem;">Loading…</div>
-                <div class="small muted">Changes daily.</div>
+                <div class="small muted">Updates live (highest karma).</div>
               </div>
 
               <div class="rim-window obs-hide mb-3">
                 <h5 class="text-danger">😈 Most Evil Pawn</h5>
                 <div id="evilBox" class="cmd-text" style="font-size:1.2rem;">Loading…</div>
-                <div class="small muted">Highest karma right now.</div>
+                <div class="small muted">Updates live (lowest karma).</div>
               </div>
 
               <button class="chaos-btn w-100" onclick="triggerChaos()">🎲 GENERATE RANDOM CHAOS COMMAND</button>
-
-              <!-- Live Vote: streamer tool (kept simple + hidden until active) -->
-              <div class="rim-window mt-3 obs-hide">
-                <h5 class="text-info">🗳️ Live Vote (Streamer Tool)</h5>
-                <div id="voteStatus" class="small muted">No active vote. Use “Start Vote” on an incident.</div>
-
-                <div class="mt-2 d-flex" style="gap:8px; flex-wrap:wrap;">
-                  <button class="btn btn-sm btn-outline-light" id="voteCopyAnnounceBtn" disabled>Copy Announce</button>
-                  <button class="btn btn-sm btn-outline-light" id="voteCopyEndBtn" disabled>Copy End</button>
-                  <button class="btn btn-sm btn-outline-danger" id="voteStopBtn" disabled>Stop Vote</button>
-                </div>
-
-                <div class="mt-3 small">
-                  <div class="d-flex align-items-center" style="gap:10px; flex-wrap:wrap;">
-                    <span class="text-success font-weight-bold">YES:</span> <span id="voteYes">0</span>
-                    <button class="btn btn-sm btn-success" id="voteYesBtn" disabled>+1</button>
-
-                    <span class="text-danger font-weight-bold">NO:</span> <span id="voteNo">0</span>
-                    <button class="btn btn-sm btn-danger" id="voteNoBtn" disabled>+1</button>
-
-                    <span class="muted">Time:</span> <span id="voteTime">—</span>
-                  </div>
-                  <div class="mt-2 muted">
-                    This panel helps you track a vote while live. It doesn’t reveal backend details.
-                  </div>
-                </div>
-              </div>
 
               <div id="raidAlert" class="mt-3 text-danger font-weight-bold" style="font-size:1.2rem;"></div>
             </div>
@@ -291,7 +277,6 @@
               <th class="sort" data-sort="abr">INCIDENT_ID ↕</th>
               <th class="sort" data-sort="price">PRICE ↕</th>
               <th class="sort" data-sort="karmatype">KARMA ↕</th>
-              <th>ACTIONS</th>
             </tr></thead>
             <tbody class="list"></tbody>
           </table>
@@ -362,7 +347,7 @@
           <div id="graveyardEmpty" class="muted small mt-2">Awaiting records…</div>
         </div>
 
-        <!-- MANUAL (restored fuller text without “system facts”) -->
+        <!-- MANUAL -->
         <div id="manual" class="tab-panel" style="display:none;">
           <h2 class="text-uppercase mb-4" style="color:#9b59b6">Instructional Manual</h2>
           <div class="row">
@@ -395,7 +380,7 @@
       </div>
     </div>
 
-    <footer class="text-center pb-5 small muted">SYSTEM VERSION 5.1 // ASHRATED_OS</footer>
+    <footer class="text-center pb-5 small muted">SYSTEM VERSION 5.2 // ASHRATED_OS</footer>
   </main>
 
   <div class="toast-mini" id="toast"></div>
@@ -438,7 +423,7 @@
     }
 
     // =========================
-    // REQUIRED: fetch helper (this was missing -> empty tabs)
+    // Fetch helper
     // =========================
     async function loadJSON(url) {
       const res = await fetch(url + "?cb=" + Date.now(), { cache: "no-store" });
@@ -451,10 +436,8 @@
     // =========================
     let itemList = null, incidentList = null, traitList = null, commandList = null;
     let cachedViewers = [];
-
     let memoryCoins = {};
     let memoryKarma = {};
-
     let alertedRaids = new Set();
     let alertedDeaths = new Set();
 
@@ -500,7 +483,6 @@
       const cmds = ["!buy raid", "!buy meteor", "!buy manhunter", "!buy toxicfallout", "!buy eclipse"];
       const pick = cmds[Math.floor(Math.random()*cmds.length)];
       setBuilder(pick, "Chaos selected.");
-      // optional auto-copy
       copyToClipboard(pick);
     }
 
@@ -511,61 +493,6 @@
         .replace(/>/g,"&gt;")
         .replace(/"/g,"&quot;")
         .replace(/'/g,"&#039;");
-    }
-
-    // =========================
-    // Live Vote UI (streamer tool)
-    // =========================
-    let voteState = { active:false, topic:"", endsAt:0, yes:0, no:0, timer:null };
-
-    function setVoteButtons(enabled) {
-      $("#voteCopyAnnounceBtn, #voteCopyEndBtn, #voteStopBtn, #voteYesBtn, #voteNoBtn").prop("disabled", !enabled);
-    }
-
-    function renderVote() {
-      if (!voteState.active) {
-        $("#voteStatus").text("No active vote. Use “Start Vote” on an incident.");
-        $("#voteYes, #voteNo").text("0");
-        $("#voteTime").text("—");
-        setVoteButtons(false);
-        return;
-      }
-
-      $("#voteYes").text(String(voteState.yes));
-      $("#voteNo").text(String(voteState.no));
-
-      const msLeft = Math.max(0, voteState.endsAt - Date.now());
-      $("#voteTime").text(Math.ceil(msLeft / 1000) + "s");
-      $("#voteStatus").html(`Vote active: <span class="cmd-text">${escapeHtml(voteState.topic)}</span>`);
-
-      setVoteButtons(true);
-      if (msLeft <= 0) endVote(false);
-    }
-
-    function startVote(topic, durationSec=30) {
-      voteState.active = true;
-      voteState.topic = topic;
-      voteState.yes = 0;
-      voteState.no = 0;
-      voteState.endsAt = Date.now() + durationSec * 1000;
-
-      if (voteState.timer) clearInterval(voteState.timer);
-      voteState.timer = setInterval(renderVote, 500);
-      renderVote();
-      toast("Vote started.");
-    }
-
-    function endVote(manualStop=true) {
-      if (!voteState.active) return;
-      voteState.active = false;
-      if (voteState.timer) clearInterval(voteState.timer);
-      voteState.timer = null;
-
-      const result = voteState.yes === voteState.no ? "TIE" : (voteState.yes > voteState.no ? "YES WINS" : "NO WINS");
-      $("#voteStatus").html(`Vote ended: <span class="cmd-text">${escapeHtml(voteState.topic)}</span><br>Result: <b class="text-white">${result}</b> (YES ${voteState.yes} / NO ${voteState.no})`);
-      $("#voteTime").text("0s");
-      setVoteButtons(false);
-      if (manualStop) toast("Vote stopped.");
     }
 
     // =========================
@@ -663,7 +590,7 @@
     }
 
     // =========================
-    // Viewer + Leaderboards + Pawns + Alerts
+    // Viewer + Leaderboards + Titles + Alerts
     // =========================
     async function loadViewerData() {
       try {
@@ -712,27 +639,23 @@
 
         $("#coinsUpdated, #karmaUpdated").text(`Updated ${new Date().toLocaleTimeString()}`);
 
-        // Pawn of the Day
-        const pawns = cachedViewers.filter(x => x.pawn);
-        if (pawns.length > 0) {
-          let hash = 0;
-          const today = new Date().toDateString();
-          for (let i=0; i<today.length; i++) hash += today.charCodeAt(i);
-          const potd = pawns[hash % pawns.length];
-          $("#potdBox").html(`${escapeHtml(potd.username)} <span class="text-white">→</span> ${escapeHtml(potd.pawn)}`);
+        // Most Helpful = highest karma
+        if (cachedViewers.length > 0) {
+          const helpful = [...cachedViewers].sort((a,b)=> (b.karma - a.karma) || (b.coins - a.coins))[0];
+          $("#potdBox").html(`${escapeHtml(helpful.username)} <span class="text-white">→</span> ${escapeHtml(helpful.pawn || "No Pawn")} (${helpful.karma})`);
         } else {
           $("#potdBox").text("No colonists registered yet.");
         }
 
-        // Evil pawn
+        // Most Evil = lowest karma
         if (cachedViewers.length > 0) {
-          const evil = [...cachedViewers].sort((a,b)=>b.karma-a.karma || b.coins-a.coins)[0];
+          const evil = [...cachedViewers].sort((a,b)=> (a.karma - b.karma) || (a.coins - b.coins))[0];
           $("#evilBox").html(`${escapeHtml(evil.username)} <span class="text-white">→</span> ${escapeHtml(evil.pawn || "No Pawn")} (${evil.karma})`);
         } else {
           $("#evilBox").text("No karma data yet.");
         }
 
-        // Raid alert (kept generic)
+        // Raid alert (generic)
         const raid = cachedViewers.find(x => x.karma > 5000);
         $("#raidAlert").text(raid ? `⚠️ WARNING: ${escapeHtml(raid.username)} has extreme karma!` : "");
 
@@ -758,7 +681,7 @@
       }
     }
 
-    // Graveyard loader (filtered)
+    // Graveyard loader (filtered + resurrect marker)
     async function loadGraveyard() {
       try {
         const res = await fetch(graveyardURL + "?cb=" + Date.now(), { cache: "no-store" });
@@ -774,13 +697,14 @@
 
         if (filtered.length > 0) {
           $("#graveyardEmpty").hide();
-          $("#graveyardBoard").html(filtered.map(f =>
-            `<tr>
-              <td class="cmd-text">${escapeHtml(f.username||"Unknown")}</td>
+          $("#graveyardBoard").html(filtered.map(f => {
+            const resBadge = (f.resurrected === true) ? `<span class="badge-res">RES</span>` : "";
+            return `<tr>
+              <td class="cmd-text">${escapeHtml(f.username||"Unknown")}${resBadge}</td>
               <td class="text-white font-weight-bold">${escapeHtml(f.pawnName||"Unknown")}</td>
               <td class="text-danger">${escapeHtml(f.cause||"Unknown")}</td>
-            </tr>`
-          ).join(""));
+            </tr>`;
+          }).join(""));
         } else {
           $("#graveyardEmpty").show().text("No records available yet.");
           $("#graveyardBoard").html("");
@@ -846,7 +770,6 @@
                   <td class="abr font-weight-bold" style="cursor:pointer;"></td>
                   <td class="price text-danger"></td>
                   <td class="karmatype"></td>
-                  <td><button class="btn btn-sm btn-outline-info vote-btn">Start Vote</button></td>
                 </tr>`
         }, normalized);
 
@@ -919,19 +842,13 @@
         failed.push("Terminal");
       }
 
-      // Row click handlers (safe delegated)
+      // Row click handlers
       $("#items tbody").on("click", "td.abr", function() {
         setBuilder(`!buy ${$(this).text().trim()} 1`, "Item selected.");
       });
 
       $("#incidents tbody").on("click", "td.abr", function() {
         setBuilder(`!buy ${$(this).text().trim()}`, "Incident selected.");
-      });
-
-      $("#incidents tbody").on("click", ".vote-btn", function() {
-        const n = $(this).closest("tr").find(".abr").text().trim();
-        setBuilder(`!vote ${n}`, "Vote command ready.");
-        startVote(`Incident: ${n}`, 30);
       });
 
       $("#traits tbody").on("click", "td.name", function() {
@@ -952,7 +869,7 @@
         setBuilder($(this).text().trim(), "Terminal command selected.");
       });
 
-      // Viewer lookup (uses cached viewers, no extra fetch, no “system facts”)
+      // Viewer lookup
       $("#viewerLookupBtn").on("click", () => {
         const name = ($("#viewerSearch").val() || "").trim().toLowerCase();
         if (!name) return $("#viewerResult").text("Please enter a username.");
@@ -978,18 +895,6 @@
         showViewerPanel($(this).data("user"));
       });
 
-      // Vote controls
-      $("#voteYesBtn").on("click", () => { if(voteState.active){ voteState.yes++; renderVote(); } });
-      $("#voteNoBtn").on("click",  () => { if(voteState.active){ voteState.no++; renderVote(); } });
-      $("#voteStopBtn").on("click", () => endVote(true));
-      $("#voteCopyAnnounceBtn").on("click", async () => {
-        if(!voteState.active) return;
-        await copyToClipboard(`VOTE STARTED: ${voteState.topic} — YES or NO (ends in 30s)!`);
-      });
-      $("#voteCopyEndBtn").on("click", async () => {
-        await copyToClipboard(`VOTE ENDED: ${voteState.topic} — YES ${voteState.yes} / NO ${voteState.no}`);
-      });
-
       // Filters
       $("#searchBar").on("keyup", function() { applySearchToActive($(this).val() || ""); });
       $("#priceMax").on("input change", function() { applyFiltersToActive(); });
@@ -1013,18 +918,16 @@
       // Start on Home
       showTab(1);
 
-      // Start data loops
+      // Start loops (more “live”: 3s viewer refresh)
       await loadViewerData();
       await loadGraveyard();
-      setInterval(loadViewerData, 5000);
-      setInterval(loadGraveyard, 30000);
+      setInterval(loadViewerData, 3000);
+      setInterval(loadGraveyard, 15000);
 
-      // Final status
       if (failed.length) setStatus(`Online with errors: ${failed.join(", ")}`, false);
       else setStatus("SYSTEM: Ready.");
     }
 
-    // Boot
     boot();
   </script>
 </body>
