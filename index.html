@@ -128,6 +128,34 @@
       vertical-align: middle;
     }
 
+    /* Hover info card for leaderboards */
+    #hoverCard{
+      position: fixed;
+      z-index: 20000;
+      min-width: 260px;
+      max-width: 340px;
+      padding: 12px 14px;
+      border: 1px solid #3c444d;
+      background: rgba(0,0,0,0.88);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.65);
+      border-radius: 8px;
+      pointer-events: none; /* doesn't steal hover */
+      display:none;
+    }
+    #hoverCard .title{
+      font-family: 'JetBrains Mono', monospace;
+      color: #00bc8c;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    #hoverCard .line{
+      font-size: .9rem;
+      color: #d2d2d2;
+    }
+    #hoverCard .line .muted{
+      opacity: .75;
+    }
+
     /* OBS overlay mode */
     body.obs-mode { background: transparent !important; padding-top: 10px; }
     body.obs-mode::before { display: none; }
@@ -246,10 +274,7 @@
                 <div id="viewerResult" class="small muted p-2" style="background:rgba(0,0,0,0.3); border-radius:4px;">Type a name to check stats.</div>
               </div>
 
-              <div class="rim-window obs-hide mb-3">
-                <h5 class="text-success">📊 Viewer Panel</h5>
-                <div id="viewerPanel" class="small muted p-2" style="background:rgba(0,0,0,0.3); border-radius:4px;">Click a username on the leaderboards to inspect.</div>
-              </div>
+              <!-- Viewer Panel removed (now hover card on leaderboards) -->
 
               <div class="rim-window">
                 <h5 class="text-secondary">💀 Death Tracker (Recent)</h5>
@@ -380,10 +405,13 @@
       </div>
     </div>
 
-    <footer class="text-center pb-5 small muted">SYSTEM VERSION 5.2 // ASHRATED_OS</footer>
+    <footer class="text-center pb-5 small muted">SYSTEM VERSION 5.3 // ASHRATED_OS</footer>
   </main>
 
   <div class="toast-mini" id="toast"></div>
+
+  <!-- Hover card lives outside layout so it can float freely -->
+  <div id="hoverCard"></div>
 
   <script>
     // =========================
@@ -493,31 +521,6 @@
         .replace(/>/g,"&gt;")
         .replace(/"/g,"&quot;")
         .replace(/'/g,"&#039;");
-    }
-
-    // =========================
-    // Viewer panel
-    // =========================
-    function showViewerPanel(username) {
-      const u = (username || "").trim().toLowerCase();
-      if (!u) return;
-
-      if (excludedUsers.has(u)) {
-        $("#viewerPanel").text("Viewer not available.");
-        return;
-      }
-
-      const v = cachedViewers.find(x => (x.username || "").toLowerCase() === u);
-      if (!v) {
-        $("#viewerPanel").text("Viewer not found yet.");
-        return;
-      }
-
-      $("#viewerPanel").html(
-        `User: <span class="cmd-text">${escapeHtml(v.username)}</span><br>` +
-        `🧑 Pawn: <b class="text-white">${escapeHtml(v.pawn || "Not assigned")}</b><br>` +
-        `💰 Coins: <b>${v.coins}</b> | 🔥 Karma: <b>${v.karma}</b>`
-      );
     }
 
     // =========================
@@ -890,9 +893,59 @@
 
       $("#viewerSearch").on("keydown", e => { if (e.key === "Enter") $("#viewerLookupBtn").click(); });
 
-      // Clickable leaderboard names
-      $(document).on("click", ".viewer-link", function() {
-        showViewerPanel($(this).data("user"));
+      // Hover card for leaderboard usernames
+      const $hover = $("#hoverCard");
+
+      function renderHoverCard(username){
+        const u = (username || "").trim().toLowerCase();
+        if (!u || excludedUsers.has(u)) return null;
+
+        const v = cachedViewers.find(x => (x.username||"").toLowerCase() === u);
+        if (!v) return null;
+
+        const pawn = v.pawn ? escapeHtml(v.pawn) : "No Pawn";
+        return `
+          <div class="title">${escapeHtml(v.username)}</div>
+          <div class="line">🧑 Pawn: <b>${pawn}</b></div>
+          <div class="line">💰 Coins: <b>${v.coins}</b> <span class="muted">|</span> 🔥 Karma: <b>${v.karma}</b></div>
+          <div class="line"><span class="muted">Hover for quick stats</span></div>
+        `;
+      }
+
+      $(document).on("mouseenter", ".viewer-link", function(e){
+        const user = $(this).data("user");
+        const html = renderHoverCard(user);
+        if (!html) return;
+
+        $hover.html(html).show();
+
+        const pad = 14;
+        let x = e.clientX + pad;
+        let y = e.clientY + pad;
+
+        const rect = $hover[0].getBoundingClientRect();
+        if (x + rect.width > window.innerWidth - 8) x = e.clientX - rect.width - pad;
+        if (y + rect.height > window.innerHeight - 8) y = e.clientY - rect.height - pad;
+
+        $hover.css({ left: x + "px", top: y + "px" });
+      });
+
+      $(document).on("mousemove", ".viewer-link", function(e){
+        if ($hover.is(":hidden")) return;
+
+        const pad = 14;
+        let x = e.clientX + pad;
+        let y = e.clientY + pad;
+
+        const rect = $hover[0].getBoundingClientRect();
+        if (x + rect.width > window.innerWidth - 8) x = e.clientX - rect.width - pad;
+        if (y + rect.height > window.innerHeight - 8) y = e.clientY - rect.height - pad;
+
+        $hover.css({ left: x + "px", top: y + "px" });
+      });
+
+      $(document).on("mouseleave", ".viewer-link", function(){
+        $hover.hide().empty();
       });
 
       // Filters
