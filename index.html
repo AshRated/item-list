@@ -37,30 +37,19 @@
 
     /* Scanline overlay */
     body::before {
-      content: " ";
-      display: block;
-      position: fixed;
+      content: " "; display: block; position: fixed;
       top: 0; left: 0; bottom: 0; right: 0;
-      background:
-        linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%),
-        linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
-      z-index: 9999;
-      background-size: 100% 2px, 3px 100%;
-      pointer-events: none;
+      background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%),
+                  linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
+      z-index: 9999; background-size: 100% 2px, 3px 100%; pointer-events: none;
     }
 
-    .navbar {
-      background-color: #1e2328 !important;
-      border-bottom: 3px solid #3c444d;
-    }
+    .navbar { background-color: #1e2328 !important; border-bottom: 3px solid #3c444d; }
     .navbar-brand { font-weight: bold; color: #d2d2d2 !important; letter-spacing: 1px; }
 
     .rim-window {
-      background-color: #262d33;
-      border: 2px solid #3c444d;
-      border-radius: 4px;
-      padding: 18px;
-      margin-bottom: 18px;
+      background-color: #262d33; border: 2px solid #3c444d;
+      border-radius: 4px; padding: 18px; margin-bottom: 18px;
       box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
     }
 
@@ -84,24 +73,16 @@
     .table thead th:hover { color: #fff; background: rgba(255,255,255,0.1); }
     .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
 
-    .rim-input {
-      background-color: #0d1117; border: 1px solid #4a545e;
-      color: #00bc8c; font-family: 'JetBrains Mono', monospace;
-    }
-
+    .rim-input { background-color: #0d1117; border: 1px solid #4a545e; color: #00bc8c; font-family: 'JetBrains Mono', monospace; }
     .twitch-wrapper { border: 4px solid #3c444d; background: #000; height: 500px; }
 
     .cmd-text { font-family: 'JetBrains Mono', monospace; color:#00bc8c; }
+    .viewer-link { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; }
+    .viewer-link:hover { color: #fff; }
     .muted { opacity: .65; }
     .badge-soft { background: rgba(46,204,113,.12); border:1px solid rgba(46,204,113,.35); color:#bff3df; }
 
-    /* Sticky Command Builder */
-    .sticky-builder {
-      position: sticky;
-      top: 65px; /* Sits just below navbar */
-      z-index: 1020;
-      box-shadow: 0 8px 15px rgba(0,0,0,0.6);
-    }
+    .sticky-builder { position: sticky; top: 65px; z-index: 1020; box-shadow: 0 8px 15px rgba(0,0,0,0.6); }
 
     .toast-mini {
       position: fixed; bottom: 18px; right: 18px; z-index: 10000;
@@ -111,7 +92,6 @@
 
     .builder { display:flex; gap:10px; align-items:stretch; flex-wrap:wrap; }
     .builder .builder-input { flex: 1 1 360px; min-width: 260px; }
-    .builder button { white-space: nowrap; }
     .chaos-btn { background:#e74c3c; color:#fff; border:none; padding:8px 12px; margin-top:10px; font-weight:bold; cursor:pointer;}
     .chaos-btn:hover { background:#c0392b; }
   </style>
@@ -132,14 +112,10 @@
 
     <div class="row">
       <div class="col-lg-9 mb-3">
-        <div class="twitch-wrapper">
-          <iframe id="twitchPlayer" src="" height="100%" width="100%" frameborder="0" allowfullscreen="true"></iframe>
-        </div>
+        <div class="twitch-wrapper"><iframe id="twitchPlayer" src="" height="100%" width="100%" frameborder="0" allowfullscreen="true"></iframe></div>
       </div>
       <div class="col-lg-3 mb-3">
-        <div class="twitch-wrapper">
-          <iframe id="twitchChat" src="" height="100%" width="100%" frameborder="0"></iframe>
-        </div>
+        <div class="twitch-wrapper"><iframe id="twitchChat" src="" height="100%" width="100%" frameborder="0"></iframe></div>
       </div>
     </div>
 
@@ -190,6 +166,7 @@
         
         <div id="home" class="tab-panel">
           <div class="row">
+            
             <div class="col-md-6 mb-3">
               <div class="rim-window mb-3">
                 <h5 class="text-warning">🏆 Pawn of the Day</h5>
@@ -201,7 +178,33 @@
                 <div id="evilBox" class="cmd-text" style="font-size:1.2rem;">Awaiting Data...</div>
                 <div class="small muted">Currently active pawn with the highest karma.</div>
               </div>
+              
               <button class="chaos-btn w-100" onclick="triggerChaos()">🎲 GENERATE RANDOM CHAOS COMMAND</button>
+              
+              <div class="rim-window mt-3">
+                <h5 class="text-info">🗳️ Live Vote</h5>
+                <div id="voteStatus" class="small muted">No active vote.</div>
+                
+                <div class="mt-2 d-flex" style="gap:8px; flex-wrap:wrap;">
+                  <button class="btn btn-sm btn-outline-light" id="voteCopyAnnounceBtn" disabled>Copy Announce</button>
+                  <button class="btn btn-sm btn-outline-light" id="voteCopyEndBtn" disabled>Copy End</button>
+                  <button class="btn btn-sm btn-outline-danger" id="voteStopBtn" disabled>Stop Vote</button>
+                </div>
+                
+                <div class="mt-3 small">
+                  <div class="d-flex align-items-center" style="gap:10px; flex-wrap:wrap;">
+                    <span class="text-success font-weight-bold">YES:</span> <span id="voteYes">0</span>
+                    <button class="btn btn-sm btn-success" id="voteYesBtn" disabled>+1</button>
+              
+                    <span class="text-danger font-weight-bold">NO:</span> <span id="voteNo">0</span>
+                    <button class="btn btn-sm btn-danger" id="voteNoBtn" disabled>+1</button>
+              
+                    <span class="muted">Time:</span> <span id="voteTime">—</span>
+                  </div>
+                  <div class="mt-2 muted">Tip: This tally is manual (for on-stream tracking), unless you later add chat integration.</div>
+                </div>
+              </div>
+
               <div id="raidAlert" class="mt-3 text-danger font-weight-bold" style="font-size:1.2rem;"></div>
             </div>
 
@@ -214,12 +217,17 @@
                 </div>
                 <div id="viewerResult" class="small muted p-2" style="background:rgba(0,0,0,0.3); border-radius:4px;">Type a name to check stats.</div>
               </div>
-
+              
+              <div class="rim-window mb-3">
+                <h5 class="text-success">📊 Viewer Panel</h5>
+                <div id="viewerPanel" class="small muted p-2" style="background:rgba(0,0,0,0.3); border-radius:4px;">
+                  Click a username on the leaderboards to inspect their stats.
+                </div>
+              </div>
+              
               <div class="rim-window">
                 <h5 class="text-secondary">💀 Death Tracker</h5>
-                <div id="deathBox" class="small muted">
-                  No fallen colonists detected in current logs.
-                </div>
+                <div id="deathBox" class="small muted">No fallen colonists detected in current logs.</div>
               </div>
             </div>
           </div>
@@ -227,47 +235,28 @@
 
         <div id="items" class="tab-panel" style="display:none;">
           <table class="table table-hover">
-            <thead><tr>
-              <th class="sort" data-sort="abr">OBJECT_ID ↕</th>
-              <th class="sort" data-sort="price">PRICE ↕</th>
-              <th class="sort" data-sort="category">CATEGORY ↕</th>
-            </tr></thead>
+            <thead><tr><th class="sort" data-sort="abr">OBJECT_ID ↕</th><th class="sort" data-sort="price">PRICE ↕</th><th class="sort" data-sort="category">CATEGORY ↕</th></tr></thead>
             <tbody class="list"></tbody>
           </table>
         </div>
 
         <div id="incidents" class="tab-panel" style="display:none;">
           <table class="table table-hover">
-            <thead><tr>
-              <th class="sort" data-sort="abr">INCIDENT_ID ↕</th>
-              <th class="sort" data-sort="price">PRICE ↕</th>
-              <th class="sort" data-sort="karmatype">KARMA ↕</th>
-              <th>ACTIONS</th>
-            </tr></thead>
+            <thead><tr><th class="sort" data-sort="abr">INCIDENT_ID ↕</th><th class="sort" data-sort="price">PRICE ↕</th><th class="sort" data-sort="karmatype">KARMA ↕</th><th>ACTIONS</th></tr></thead>
             <tbody class="list"></tbody>
           </table>
         </div>
 
         <div id="traits" class="tab-panel" style="display:none;">
           <table class="table table-hover">
-            <thead><tr>
-              <th class="sort" data-sort="name">MOD_ID ↕</th>
-              <th>FUNCTION</th>
-              <th class="sort" data-sort="add">ADD_COST ↕</th>
-              <th class="sort" data-sort="rem">REM_COST ↕</th>
-              <th>ACTIONS</th>
-            </tr></thead>
+            <thead><tr><th class="sort" data-sort="name">MOD_ID ↕</th><th>FUNCTION</th><th class="sort" data-sort="add">ADD_COST ↕</th><th class="sort" data-sort="rem">REM_COST ↕</th><th>ACTIONS</th></tr></thead>
             <tbody class="list"></tbody>
           </table>
         </div>
 
         <div id="commands" class="tab-panel" style="display:none;">
           <table class="table table-hover">
-            <thead><tr>
-              <th class="sort" data-sort="usage">INPUT_STRING ↕</th>
-              <th>OPERATION</th>
-              <th class="sort" data-sort="userLevel">ACCESS ↕</th>
-            </tr></thead>
+            <thead><tr><th class="sort" data-sort="usage">INPUT_STRING ↕</th><th>OPERATION</th><th class="sort" data-sort="userLevel">ACCESS ↕</th></tr></thead>
             <tbody class="list"></tbody>
           </table>
         </div>
@@ -277,8 +266,7 @@
             <div class="col-md-6 mb-3">
               <div class="rim-window">
                 <div class="d-flex align-items-center justify-content-between">
-                  <h5 class="text-success mb-2">💰 Top 10 Richest</h5>
-                  <span class="muted small" id="coinsUpdated">—</span>
+                  <h5 class="text-success mb-2">💰 Top 10 Richest</h5><span class="muted small" id="coinsUpdated">—</span>
                 </div>
                 <table class="table table-sm mb-0">
                   <thead><tr><th>Viewer</th><th>Coins</th></tr></thead>
@@ -290,8 +278,7 @@
             <div class="col-md-6 mb-3">
               <div class="rim-window">
                 <div class="d-flex align-items-center justify-content-between">
-                  <h5 class="text-danger mb-2">🔥 Top 10 Karma</h5>
-                  <span class="muted small" id="karmaUpdated">—</span>
+                  <h5 class="text-danger mb-2">🔥 Top 10 Karma</h5><span class="muted small" id="karmaUpdated">—</span>
                 </div>
                 <table class="table table-sm mb-0">
                   <thead><tr><th>Viewer</th><th>Karma</th></tr></thead>
@@ -306,35 +293,33 @@
           <h2 class="text-uppercase mb-4" style="color:#9b59b6">Instructional Manual</h2>
           <div class="row">
             <div class="col-md-6">
-              <div class="guide-box bg-dark border-left border-success p-3 mb-3">
-                <h5 class="text-success">CREDIT ACCUMULATION</h5>
-                <p class="small mb-0">Watch time generates passive Silver. Check wallet with <span class="cmd-text">!bal</span>.</p>
-              </div>
-              <div class="guide-box bg-dark border-left border-info p-3 mb-3">
-                <h5 class="text-info">SUPPLY REQUISITION</h5>
-                <p class="small mb-0">Items drop via trade pod. Format: <span class="cmd-text">!buy [item] [qty]</span>.</p>
-              </div>
+              <div class="guide-box bg-dark border-left border-success p-3 mb-3"><h5 class="text-success">CREDIT ACCUMULATION</h5><p class="small mb-0">Watch time generates passive Silver. Check wallet with <span class="cmd-text">!bal</span>.</p></div>
+              <div class="guide-box bg-dark border-left border-info p-3 mb-3"><h5 class="text-info">SUPPLY REQUISITION</h5><p class="small mb-0">Items drop via trade pod. Format: <span class="cmd-text">!buy [item] [qty]</span>.</p></div>
             </div>
             <div class="col-md-6">
-              <div class="guide-box bg-dark border-left border-warning p-3 mb-3">
-                <h5 class="text-warning">COLONIST INTEGRATION</h5>
-                <p class="small mb-0">Enter the queue with <span class="cmd-text">!joinqueue</span>. Check your pawn with <span class="cmd-text">!mypawnskills</span>.</p>
-              </div>
-              <div class="guide-box bg-dark border-left border-danger p-3 mb-3">
-                <h5 class="text-danger">INCIDENT TRIGGER</h5>
-                <p class="small mb-0">Triggers events. Hostile incidents cost more. Format: <span class="cmd-text">!buy [incident]</span>.</p>
-              </div>
+              <div class="guide-box bg-dark border-left border-warning p-3 mb-3"><h5 class="text-warning">COLONIST INTEGRATION</h5><p class="small mb-0">Enter the queue with <span class="cmd-text">!joinqueue</span>. Check your pawn with <span class="cmd-text">!mypawnskills</span>.</p></div>
+              <div class="guide-box bg-dark border-left border-danger p-3 mb-3"><h5 class="text-danger">INCIDENT TRIGGER</h5><p class="small mb-0">Triggers events. Hostile incidents cost more. Format: <span class="cmd-text">!buy [incident]</span>.</p></div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <footer class="text-center pb-5 small muted">SYSTEM VERSION 4.0 // ASHRATED_OS</footer>
+    <footer class="text-center pb-5 small muted">SYSTEM VERSION 4.1 // ASHRATED_OS</footer>
   </main>
 
   <div class="toast-mini" id="toast"></div>
 
   <script>
+    // =========================
+    // Globals & Caches
+    // =========================
+    let cachedViewers = []; // Cache for Viewer Panel (Patch A)
+    
+    // Live Vote State (Patch B)
+    let voteState = {
+      active: false, topic: "", endsAt: 0, yes: 0, no: 0, timer: null
+    };
+
     // =========================
     // UI Helpers
     // =========================
@@ -345,68 +330,114 @@
     }
 
     function toast(msg) {
-      const t = $("#toast");
-      t.text(msg).stop(true,true).fadeIn(120);
-      setTimeout(() => t.fadeOut(250), 1400);
+      const t = $("#toast"); t.text(msg).stop(true,true).fadeIn(120); setTimeout(() => t.fadeOut(250), 1400);
     }
 
     function setBuilder(cmdText, hintText) {
-      $("#builderInput").val(cmdText);
-      $("#builderHint").text(hintText || "Command ready. Copy & paste into chat.");
-      
-      // Flash animation on builder to show it updated
+      $("#builderInput").val(cmdText); $("#builderHint").text(hintText || "Command ready. Copy & paste into chat.");
       $(".sticky-builder").css("outline", "2px solid #00bc8c");
       setTimeout(() => $(".sticky-builder").css("outline", "none"), 300);
     }
 
     async function copyToClipboard(text) {
-      try {
-        await navigator.clipboard.writeText(text);
-        toast("Copied to clipboard!");
-      } catch {
-        const inp = document.getElementById("builderInput");
-        inp.select(); document.execCommand("copy");
-        toast("Copied (fallback)!");
-      }
+      try { await navigator.clipboard.writeText(text); toast("Copied to clipboard!"); } 
+      catch { const inp = document.getElementById("builderInput"); inp.select(); document.execCommand("copy"); toast("Copied (fallback)!"); }
     }
 
-    function openTwitchChat() {
-      window.open(`https://www.twitch.tv/popout/${twitchChannel}/chat?popout=`, "_blank");
-    }
+    function openTwitchChat() { window.open(`https://www.twitch.tv/popout/${twitchChannel}/chat?popout=`, "_blank"); }
 
     function triggerChaos() {
       const cmds = ["!buy raid", "!buy meteor", "!buy manhunter", "!buy toxicfallout", "!buy eclipse", "!buy infestation"];
       const pick = cmds[Math.floor(Math.random()*cmds.length)];
       setBuilder(pick, "🎲 CHAOS SELECTED. COPY AND DEPLOY IF YOU DARE.");
     }
+    
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+
+    // =========================
+    // Live Vote UI Logic (Patch B)
+    // =========================
+    function setVoteButtons(enabled) {
+      $("#voteCopyAnnounceBtn").prop("disabled", !enabled);
+      $("#voteCopyEndBtn").prop("disabled", !enabled);
+      $("#voteStopBtn").prop("disabled", !enabled);
+      $("#voteYesBtn").prop("disabled", !enabled);
+      $("#voteNoBtn").prop("disabled", !enabled);
+    }
+
+    function renderVote() {
+      if (!voteState.active) {
+        $("#voteStatus").text("No active vote."); $("#voteYes").text("0"); $("#voteNo").text("0"); $("#voteTime").text("—");
+        setVoteButtons(false); return;
+      }
+      $("#voteYes").text(String(voteState.yes)); $("#voteNo").text(String(voteState.no));
+      const msLeft = Math.max(0, voteState.endsAt - Date.now());
+      $("#voteTime").text(Math.ceil(msLeft / 1000) + "s");
+
+      $("#voteStatus").html(`Vote active: <span class="cmd-text">${escapeHtml(voteState.topic)}</span><br><span class="muted">Type YES or NO</span>`);
+      setVoteButtons(true);
+      if (msLeft <= 0) endVote(false);
+    }
+
+    function startVote(topic, durationSec = 30) {
+      voteState.active = true; voteState.topic = topic; voteState.yes = 0; voteState.no = 0; voteState.endsAt = Date.now() + durationSec * 1000;
+      if (voteState.timer) clearInterval(voteState.timer);
+      voteState.timer = setInterval(renderVote, 500);
+      renderVote(); toast(`Vote started: ${topic}`);
+    }
+
+    function endVote(manualStop = true) {
+      if (!voteState.active) return;
+      voteState.active = false;
+      if (voteState.timer) clearInterval(voteState.timer); voteState.timer = null;
+      
+      const result = voteState.yes === voteState.no ? "TIE" : (voteState.yes > voteState.no ? "YES WINS" : "NO WINS");
+      $("#voteStatus").html(`Vote ended: <span class="cmd-text">${escapeHtml(voteState.topic)}</span><br>Result: <b class="text-white">${result}</b> (YES ${voteState.yes} / NO ${voteState.no})`);
+      $("#voteTime").text("0s"); setVoteButtons(false);
+      if (manualStop) toast("Vote stopped.");
+    }
+
+    // =========================
+    // Viewer Panel Logic (Patch A)
+    // =========================
+    function showViewerPanel(username) {
+      const u = (username || "").trim().toLowerCase();
+      if (!u) return;
+
+      if (excludedUsers.has(u)) {
+        $("#viewerPanel").html("<span class='text-danger'>SYSTEM DENIED: User is excluded.</span>");
+        return;
+      }
+
+      const v = cachedViewers.find(x => (x.username || "").toLowerCase() === u);
+      if (!v) {
+        $("#viewerPanel").text("Viewer not found in cached data yet. Wait a moment and try again.");
+        return;
+      }
+
+      const pawn = v.pawn || "Not assigned";
+      $("#viewerPanel").html(
+        `User: <span class="cmd-text">${escapeHtml(v.username)}</span><br>` +
+        `🧑 Pawn: <b class="text-white">${escapeHtml(pawn)}</b><br>` +
+        `💰 Coins: <b>${v.coins}</b> | 🔥 Karma: <b>${v.karma}</b>`
+      );
+    }
 
     // =========================
     // Tabs & Filters
     // =========================
     let activeTab = 1; 
-
     function showTab(tab) {
       activeTab = tab;
-      for(let i=1; i<=7; i++) {
-        $(`#tabBtn${i}`).attr("class", "btn-tab" + (tab===i ? ` active-${i}` : ""));
-      }
+      for(let i=1; i<=7; i++) { $(`#tabBtn${i}`).attr("class", "btn-tab" + (tab===i ? ` active-${i}` : "")); }
+      $("#home").toggle(tab===1); $("#items").toggle(tab===2); $("#incidents").toggle(tab===3);
+      $("#traits").toggle(tab===4); $("#commands").toggle(tab===5); $("#leaderboards").toggle(tab===6); $("#manual").toggle(tab===7);
 
-      $("#home").toggle(tab===1);
-      $("#items").toggle(tab===2);
-      $("#incidents").toggle(tab===3);
-      $("#traits").toggle(tab===4);
-      $("#commands").toggle(tab===5);
-      $("#leaderboards").toggle(tab===6);
-      $("#manual").toggle(tab===7);
-
-      // Search/Filter row only shows on Lists (Tabs 2,3,4,5)
-      $("#filterRow").toggle(tab >= 2 && tab <= 5);
-      $("#priceBox").toggle(tab === 2 || tab === 3 || tab === 4); 
-
-      $("#searchBar").val(""); $("#priceMax").val("");
-      applyFiltersToActive(); applySearchToActive("");
+      $("#filterRow").toggle(tab >= 2 && tab <= 5); $("#priceBox").toggle(tab >= 2 && tab <= 4); 
+      $("#searchBar").val(""); $("#priceMax").val(""); applyFiltersToActive(); applySearchToActive("");
     }
-
     for(let i=1; i<=7; i++) { $(`#tabBtn${i}`).on("click", () => showTab(i)); }
 
     // =========================
@@ -419,33 +450,20 @@
     }
 
     let itemList = null, incidentList = null, traitList = null, commandList = null;
-
     function getActiveList() {
-      if (activeTab === 2) return itemList;
-      if (activeTab === 3) return incidentList;
-      if (activeTab === 4) return traitList;
-      if (activeTab === 5) return commandList;
-      return null;
+      if (activeTab === 2) return itemList; if (activeTab === 3) return incidentList;
+      if (activeTab === 4) return traitList; if (activeTab === 5) return commandList; return null;
     }
-
     function applySearchToActive(q) { const L = getActiveList(); if (L) L.search(q); }
     function applyFiltersToActive() {
       const L = getActiveList(); if (!L) return;
-      const maxStr = ($("#priceMax").val() || "").trim();
-      const max = maxStr === "" ? null : Number(maxStr);
-
+      const maxStr = ($("#priceMax").val() || "").trim(); const max = maxStr === "" ? null : Number(maxStr);
       if (max !== null && (Number.isNaN(max) || max < 0)) { L.filter(); return; }
-
-      if (activeTab >= 2 && activeTab <= 4) {
-        L.filter(item => {
-          const p = Number(item.values().price || 0);
-          return (max === null) ? true : (p <= max);
-        });
-      } else { L.filter(); }
+      if (activeTab >= 2 && activeTab <= 4) { L.filter(item => { return (max === null) ? true : (Number(item.values().price || 0) <= max); }); } else { L.filter(); }
     }
 
     // =========================
-    // ViewerData: Home & Leaderboards
+    // ViewerData Parsing
     // =========================
     async function loadViewerData() {
       try {
@@ -453,51 +471,45 @@
         const data = await res.json();
         if (!data || !data.viewers) return;
 
-        // Filter out excluded users
-        const viewers = (Array.isArray(data.viewers) ? data.viewers : [])
-                        .filter(v => !excludedUsers.has((v.username||"").toLowerCase()));
+        // Filter and Cache
+        const viewers = (Array.isArray(data.viewers) ? data.viewers : []).filter(v => !excludedUsers.has((v.username||"").toLowerCase()));
+        cachedViewers = viewers.map(v => ({
+          username: (v.username || "").trim(), coins: Number(v.coins || 0), karma: Number(v.karma || 0), pawn: (v.pawnName || v.pawn || v.colonist || "").trim(), raw: v
+        }));
 
-        // Update Leaderboards
+        // Render Leaderboards (Clickable for Viewer Panel)
         const topCoins = [...viewers].sort((a,b) => (b.coins||0) - (a.coins||0)).slice(0,10);
         const topKarma = [...viewers].sort((a,b) => (b.karma||0) - (a.karma||0)).slice(0,10);
 
-        $("#coinsBoard").html(topCoins.map(v => `<tr><td>${escapeHtml(v.username||"")}</td><td class="text-success">${Number(v.coins||0)}</td></tr>`).join(""));
-        $("#karmaBoard").html(topKarma.map(v => `<tr><td>${escapeHtml(v.username||"")}</td><td class="text-danger">${Number(v.karma||0)}</td></tr>`).join(""));
+        $("#coinsBoard").html(topCoins.map(v => `<tr><td><span class="viewer-link cmd-text" data-user="${escapeHtml(v.username||"")}">${escapeHtml(v.username||"")}</span></td><td class="text-success">${Number(v.coins||0)}</td></tr>`).join(""));
+        $("#karmaBoard").html(topKarma.map(v => `<tr><td><span class="viewer-link cmd-text" data-user="${escapeHtml(v.username||"")}">${escapeHtml(v.username||"")}</span></td><td class="text-danger">${Number(v.karma||0)}</td></tr>`).join(""));
         
         const now = new Date().toLocaleTimeString();
         $("#coinsUpdated").text(`Updated ${now}`); $("#karmaUpdated").text(`Updated ${now}`);
 
-        // Update Pawn of the Day (Locked by Date Hash so it stays consistent for the day)
+        // Update Pawn of the Day
         const pawns = viewers.filter(x => x.pawnName);
         if(pawns.length > 0) {
-            let todayStr = new Date().toDateString();
-            let hash = 0; for(let i=0; i<todayStr.length; i++) hash += todayStr.charCodeAt(i);
+            let todayStr = new Date().toDateString(); let hash = 0; for(let i=0; i<todayStr.length; i++) hash += todayStr.charCodeAt(i);
             let potd = pawns[hash % pawns.length];
             $("#potdBox").html(`${escapeHtml(potd.username)} <span class="text-white">→</span> ${escapeHtml(potd.pawnName)}`);
-        }
+        } else { $("#potdBox").text("No colonists registered yet."); }
 
         // Update Evil Pawn
-        if(viewers.length > 0) {
-            let evil = [...viewers].sort((a,b) => (b.karma||0) - (a.karma||0))[0];
-            if(evil) $("#evilBox").html(`${escapeHtml(evil.username)} <span class="text-white">→</span> ${escapeHtml(evil.pawnName || "No Pawn")} (${evil.karma})`);
-        }
+        let evil = [...viewers].sort((a,b) => (b.karma||0) - (a.karma||0))[0];
+        if(evil) { $("#evilBox").html(`${escapeHtml(evil.username)} <span class="text-white">→</span> ${escapeHtml(evil.pawnName || "No Pawn")} (${evil.karma})`); } 
+        else { $("#evilBox").text("No karma data yet."); }
 
         // Raid Detection
         let raid = viewers.find(x => x.karma > 5000);
         if(raid) $("#raidAlert").text(`⚠️ RAID WARNING: ${escapeHtml(raid.username)} HAS EXTREME KARMA!`);
         else $("#raidAlert").text("");
 
-        // Death Tracker (Checks if JSON passes 'isDead' or 'status' flag. Expand as needed)
+        // Death Tracker
         let deadPawns = viewers.filter(x => x.isDead || x.status === "dead" || x.status === "deceased");
-        if(deadPawns.length > 0) {
-            $("#deathBox").html(deadPawns.map(d => `<div class="text-danger">☠️ ${escapeHtml(d.username)} (${escapeHtml(d.pawnName)})</div>`).join(""));
-        }
+        if(deadPawns.length > 0) { $("#deathBox").html(deadPawns.map(d => `<div class="text-danger">☠️ ${escapeHtml(d.username)} (${escapeHtml(d.pawnName)})</div>`).join("")); }
 
       } catch (e) { console.log("ViewerData load error:", e); }
-    }
-
-    function escapeHtml(s) {
-      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
     }
 
     async function lookupViewer() {
@@ -505,27 +517,18 @@
       if (!name) return $("#viewerResult").text("Please enter a username.");
       if (excludedUsers.has(name)) return $("#viewerResult").html("<span class='text-danger'>SYSTEM DENIED: User is excluded from database.</span>");
 
-      try {
-        const res = await fetch(viewerDataURL + "?cb=" + Date.now(), { cache: "no-store" });
-        const data = await res.json();
-        const viewers = Array.isArray(data.viewers) ? data.viewers : [];
-        const v = viewers.find(x => (x.username||"").toLowerCase() === name);
+      const v = cachedViewers.find(x => (x.username||"").toLowerCase() === name);
+      if (!v) return $("#viewerResult").text("User not found in the colony database.");
 
-        if (!v) return $("#viewerResult").text("User not found in the colony database.");
-
-        const pawn = v.pawnName || v.pawn || v.colonist || "Not assigned";
-        $("#viewerResult").html(
-          `User: <span class="cmd-text">${escapeHtml(v.username)}</span> | 🧑 Pawn: <b class="text-white">${escapeHtml(pawn)}</b><br>` +
-          `💰 Coins: <b>${Number(v.coins||0)}</b> | 🔥 Karma: <b>${Number(v.karma||0)}</b>`
-        );
-      } catch (e) { $("#viewerResult").text("Lookup failed."); }
+      const pawn = v.pawn || "Not assigned";
+      $("#viewerResult").html(`User: <span class="cmd-text">${escapeHtml(v.username)}</span> | 🧑 Pawn: <b class="text-white">${escapeHtml(pawn)}</b><br>💰 Coins: <b>${v.coins}</b> | 🔥 Karma: <b>${v.karma}</b>`);
     }
 
     $("#viewerLookupBtn").on("click", lookupViewer);
     $("#viewerSearch").on("keydown", function(e){ if(e.key==="Enter") lookupViewer(); });
 
     // =========================
-    // Boot: Load Lists
+    // Boot & Wire Handlers
     // =========================
     async function boot() {
       $("#twitchPlayer").attr("src", `https://player.twitch.tv/?channel=${twitchChannel}&parent=${twitchParent}&muted=false`);
@@ -535,9 +538,7 @@
       try {
         const data = await loadJSON(itemListURL);
         const items = (data && Array.isArray(data.items)) ? data.items : [];
-        const normalized = items.filter(i => Number(i.price || 0) > 0).map(i => ({
-            abr: i.abr || i.name || i.defName || "", price: Number(i.price || 0), category: i.category || i.type || "—"
-        }));
+        const normalized = items.filter(i => Number(i.price || 0) > 0).map(i => ({ abr: i.abr || i.name || i.defName || "", price: Number(i.price || 0), category: i.category || i.type || "—" }));
         itemList = new List("items", { valueNames: ["abr","price","category"], item: `<tr><td class="abr font-weight-bold" style="cursor:pointer;"></td><td class="price text-success"></td><td class="category muted"></td></tr>` }, normalized);
       } catch (e) { setStatus("ERROR: Inventory feed failed.", false); }
 
@@ -545,31 +546,17 @@
       try {
         const data = await loadJSON(incidentListURL);
         const inc = (data && Array.isArray(data.incitems)) ? data.incitems : [];
-        const normalized = inc.filter(i => Number(i.price || 0) > 0).map(i => ({
-            abr: i.abr || i.name || i.defName || "", price: Number(i.price || 0), karmatype: i.karmatype || i.karmaType || i.karma || "—"
-        }));
-        // Note: added Vote button in HTML template
-        incidentList = new List("incidents", { 
-            valueNames: ["abr","price","karmatype"], 
-            item: `<tr><td class="abr font-weight-bold" style="cursor:pointer;"></td><td class="price text-danger"></td><td class="karmatype"></td><td><button class="btn btn-sm btn-outline-info vote-btn">Start Vote</button></td></tr>` 
-        }, normalized);
+        const normalized = inc.filter(i => Number(i.price || 0) > 0).map(i => ({ abr: i.abr || i.name || i.defName || "", price: Number(i.price || 0), karmatype: i.karmatype || i.karmaType || i.karma || "—" }));
+        incidentList = new List("incidents", { valueNames: ["abr","price","karmatype"], item: `<tr><td class="abr font-weight-bold" style="cursor:pointer;"></td><td class="price text-danger"></td><td class="karmatype"></td><td><button class="btn btn-sm btn-outline-info vote-btn">Start Vote</button></td></tr>` }, normalized);
       } catch (e) { setStatus("ERROR: Incidents feed failed.", false); }
 
       setStatus("BOOT: Loading Genetics…");
       try {
         const data = await loadJSON(shopExtURL);
         const combined = [];
-        if (data && Array.isArray(data.traits)) {
-          data.traits.forEach(t => combined.push({ name: t.defName || t.name || "", desc: t.description || "", add: Number(t.addPrice || 0), rem: Number(t.removePrice || 0), price: Number(t.addPrice || 0) }));
-        }
-        if (data && Array.isArray(data.races)) {
-          data.races.filter(r => r.enabled).forEach(r => combined.push({ name: (r.defName || r.name || "") + " (Race)", desc: r.description || "", add: Number(r.price || 0), rem: "N/A", price: Number(r.price || 0) }));
-        }
-        
-        traitList = new List("traits", { 
-            valueNames: ["name","desc","add","rem","price"], 
-            item: `<tr><td class="name text-warning font-weight-bold" style="cursor:pointer;"></td><td class="desc small"></td><td class="add text-success"></td><td class="rem text-danger"></td><td><button class="btn btn-sm btn-success install-btn mr-1">Install</button><button class="btn btn-sm btn-danger remove-btn">Remove</button></td></tr>` 
-        }, combined);
+        if (data && Array.isArray(data.traits)) data.traits.forEach(t => combined.push({ name: t.defName || t.name || "", desc: t.description || "", add: Number(t.addPrice || 0), rem: Number(t.removePrice || 0), price: Number(t.addPrice || 0) }));
+        if (data && Array.isArray(data.races)) data.races.filter(r => r.enabled).forEach(r => combined.push({ name: (r.defName || r.name || "") + " (Race)", desc: r.description || "", add: Number(r.price || 0), rem: "N/A", price: Number(r.price || 0) }));
+        traitList = new List("traits", { valueNames: ["name","desc","add","rem","price"], item: `<tr><td class="name text-warning font-weight-bold" style="cursor:pointer;"></td><td class="desc small"></td><td class="add text-success"></td><td class="rem text-danger"></td><td><button class="btn btn-sm btn-success install-btn mr-1">Install</button><button class="btn btn-sm btn-danger remove-btn">Remove</button></td></tr>` }, combined);
       } catch (e) { setStatus("ERROR: Genetics feed failed.", false); }
 
       setStatus("BOOT: Loading Terminal Commands…");
@@ -580,65 +567,41 @@
         commandList = new List("commands", { valueNames: ["usage","description","userLevel"], item: `<tr><td class="usage cmd-text" style="cursor:pointer;"></td><td class="description small"></td><td class="userLevel font-weight-bold"></td></tr>` }, arr);
       } catch (e) { setStatus("ERROR: Commands feed failed.", false); }
 
-      // =========================
       // Row & Button Click Handlers
-      // =========================
-      
-      // Items Tab Click
-      $("#items tbody").on("click", "td.abr", function() {
-        const name = $(this).text().trim();
-        setBuilder(`!buy ${name} 1`, `Item selected. Edit quantity if needed, then copy.`);
-      });
+      $("#items tbody").on("click", "td.abr", function() { setBuilder(`!buy ${$(this).text().trim()} 1`, `Item selected.`); });
+      $("#incidents tbody").on("click", "td.abr", function() { setBuilder(`!buy ${$(this).text().trim()}`, `Incident selected.`); });
+      $("#traits tbody").on("click", "td.name", function() { setBuilder(`!trait ${$(this).text().trim()}`, `Genetics selected.`); });
+      $("#commands tbody").on("click", "td.usage", function() { setBuilder($(this).text().trim(), `Terminal command selected.`); });
 
-      // Incidents Tab Click
-      $("#incidents tbody").on("click", "td.abr", function() {
-        setBuilder(`!buy ${$(this).text().trim()}`, `Incident selected. Copy and run in chat.`);
-      });
-      // Incident Vote Button Click
+      // Voting Buttons Hooks (Patch B Integration)
       $("#incidents tbody").on("click", ".vote-btn", function() {
         const name = $(this).closest("tr").find(".abr").text().trim();
         setBuilder(`!vote ${name}`, `Voting command ready for incident: ${name}`);
+        startVote(`Incident: ${name}`, 30); // Triggers Patch B
       });
 
-      // Genetics Tab Click
-      $("#traits tbody").on("click", "td.name", function() {
-        setBuilder(`!trait ${$(this).text().trim()}`, `Genetics selected. Adjust format if needed.`);
-      });
-      // Genetics Install/Remove Buttons
-      $("#traits tbody").on("click", ".install-btn", function() {
-        const name = $(this).closest("tr").find(".name").text().trim().replace(" (Race)", "");
-        setBuilder(`!trait add ${name}`, `Install Gene command ready.`);
-      });
-      $("#traits tbody").on("click", ".remove-btn", function() {
-        const name = $(this).closest("tr").find(".name").text().trim().replace(" (Race)", "");
-        setBuilder(`!trait remove ${name}`, `Remove Gene command ready.`);
-      });
+      $("#voteYesBtn").on("click", () => { if (voteState.active) { voteState.yes++; renderVote(); } });
+      $("#voteNoBtn").on("click",  () => { if (voteState.active) { voteState.no++; renderVote(); } });
+      $("#voteStopBtn").on("click", () => endVote(true));
+      $("#voteCopyAnnounceBtn").on("click", async () => { if(voteState.active) await copyToClipboard(`VOTE STARTED: ${voteState.topic} — type YES or NO (ends in 30s)!`); });
+      $("#voteCopyEndBtn").on("click", async () => { await copyToClipboard(`VOTE ENDED: ${voteState.topic} — YES ${voteState.yes} / NO ${voteState.no}`); });
 
-      // Terminal Tab Click
-      $("#commands tbody").on("click", "td.usage", function() {
-        setBuilder($(this).text().trim(), `Terminal command selected. Copy and run in chat.`);
-      });
+      // Genetics Sub-buttons
+      $("#traits tbody").on("click", ".install-btn", function() { setBuilder(`!trait add ${$(this).closest("tr").find(".name").text().trim().replace(" (Race)", "")}`, `Install Gene command ready.`); });
+      $("#traits tbody").on("click", ".remove-btn", function() { setBuilder(`!trait remove ${$(this).closest("tr").find(".name").text().trim().replace(" (Race)", "")}`, `Remove Gene command ready.`); });
 
-      // Search + Filters
+      // Patch A Integration: Viewer Panel Hook
+      $(document).on("click", ".viewer-link", function() { showViewerPanel($(this).data("user")); });
+
+      // General UI hooks
       $("#searchBar").on("keyup", function() { applySearchToActive($(this).val() || ""); });
       $("#priceMax").on("keyup change", function() { applyFiltersToActive(); });
-
-      // Builder buttons
-      $("#copyBtn").on("click", async () => {
-        const val = $("#builderInput").val() || "";
-        if (!val.trim()) return toast("Nothing to copy.");
-        await copyToClipboard(val);
-      });
-      $("#copyOpenBtn").on("click", async () => {
-        const val = $("#builderInput").val() || "";
-        if (!val.trim()) return toast("Nothing to copy.");
-        await copyToClipboard(val);
-        openTwitchChat();
-      });
+      $("#copyBtn").on("click", async () => { const v = $("#builderInput").val(); if (v) await copyToClipboard(v); });
+      $("#copyOpenBtn").on("click", async () => { const v = $("#builderInput").val(); if (v) { await copyToClipboard(v); openTwitchChat(); }});
       $("#clearBtn").on("click", () => setBuilder("", "Waiting for selection…"));
 
-      showTab(1); // Start on Home
-      loadViewerData(); setInterval(loadViewerData, 5000); // Start Leaderboard loop
+      showTab(1); 
+      loadViewerData(); setInterval(loadViewerData, 5000); 
       setStatus("SYSTEM: Data feeds online. Ready.");
     }
 
