@@ -1,65 +1,55 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no" />
 
   <title>AshRated // Colony Command Console</title>
 
-  <script type="text/javascript">
-    // ===== GitHub raw JSON feeds =====
-    const itemListURL  = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreItems.json";
-    const eventListURL = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreIncidents.json";
-    const shopExtURL   = "https://raw.githubusercontent.com/AshRated/item-list/master/ShopExt.json";
-    const commandsURL  = "https://raw.githubusercontent.com/AshRated/item-list/master/commands.json";
+  <!-- Bootstrap 4 -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-    const TWITCH_CHANNEL = "ashrated";
+  <!-- jQuery + list.js -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
 
-    // ===== Command formats (edit here if your bot differs) =====
-    const CMD = {
-      buy: "!buy",
-      bal: "!bal",
-      addTrait: "!trait",
-      removeTrait: "!removetrait",
-      // If races require a different command in YOUR setup, change this:
-      buyRace: "!buy"
-    };
+  <script>
+    // === YOUR LIVE JSON FEEDS (GitHub) ===
+    // Repo: https://ashrated.github.io/item-list/
+    const itemListURL     = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreItems.json";
+    const incidentListURL = "https://raw.githubusercontent.com/AshRated/item-list/master/StoreIncidents.json"; // <- incidents, not StoreEvents
+    const shopExtURL      = "https://raw.githubusercontent.com/AshRated/item-list/master/ShopExt.json";
+    const commandsURL     = "https://raw.githubusercontent.com/AshRated/item-list/master/commands.json";
+
+    // Live viewer feed (uploaded by Mix It Up)
+    const viewerDataURL   = "https://raw.githubusercontent.com/AshRated/item-list/master/viewerdata/ViewerData.json";
+
+    // Twitch embeds must include your GitHub Pages domain as parent
+    const twitchChannel   = "ashrated";
+    const twitchParent    = "ashrated.github.io"; // IMPORTANT
   </script>
 
   <style>
     body {
       background-color: #0d1117;
-      font-family: 'Verdana','Geneva',sans-serif;
+      font-family: Verdana, Geneva, sans-serif;
       color: #d2d2d2;
       padding-top: 70px;
     }
 
+    /* Scanline overlay */
     body::before {
       content: " ";
       display: block;
       position: fixed;
       top: 0; left: 0; bottom: 0; right: 0;
       background:
-        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%),
+        linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
       z-index: 9999;
       background-size: 100% 2px, 3px 100%;
       pointer-events: none;
-    }
-
-    .rim-window {
-      background-color: #262d33;
-      border: 2px solid #3c444d;
-      border-radius: 4px;
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
     }
 
     .navbar {
@@ -72,30 +62,38 @@
       letter-spacing: 1px;
     }
 
+    .rim-window {
+      background-color: #262d33;
+      border: 2px solid #3c444d;
+      border-radius: 4px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+
     .btn-tab {
       background-color: #313a42;
       color: #d2d2d2;
       border: 1px solid #4a545e;
       border-bottom: none;
-      padding: 10px 25px;
-      margin-right: 5px;
+      padding: 10px 22px;
+      margin-right: 6px;
       border-radius: 4px 4px 0 0;
-      font-size: 0.85rem;
+      font-size: .85rem;
       cursor: pointer;
       text-transform: uppercase;
       user-select: none;
     }
-    .btn-tab:hover { background-color: #4a545e; color: #fff; }
-    .btn-tab.active-1 { background-color: #2ecc71; color: #000; font-weight: bold; }
-    .btn-tab.active-2 { background-color: #e74c3c; color: #fff; font-weight: bold; }
-    .btn-tab.active-3 { background-color: #f1c40f; color: #000; font-weight: bold; }
-    .btn-tab.active-4 { background-color: #3498db; color: #fff; font-weight: bold; }
-    .btn-tab.active-5 { background-color: #9b59b6; color: #fff; font-weight: bold; }
+    .btn-tab:hover { background-color: #4a545e; color:#fff; }
+    .btn-tab.active-1 { background-color:#2ecc71; color:#000; font-weight:bold; }
+    .btn-tab.active-2 { background-color:#e74c3c; color:#fff; font-weight:bold; }
+    .btn-tab.active-3 { background-color:#f1c40f; color:#000; font-weight:bold; }
+    .btn-tab.active-4 { background-color:#3498db; color:#fff; font-weight:bold; }
+    .btn-tab.active-5 { background-color:#9b59b6; color:#fff; font-weight:bold; }
 
-    .table { background-color: rgba(0,0,0,0.2); border: 1px solid #3c444d; color: #d2d2d2; }
-    .table thead th { border-bottom: 2px solid #3c444d; color: #a1a1a1; font-size: 0.8rem; }
-    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); }
-    .table tbody tr { cursor: pointer; }
+    .table { background-color: rgba(0,0,0,0.2); border: 1px solid #3c444d; color:#d2d2d2; }
+    .table thead th { border-bottom: 2px solid #3c444d; color:#a1a1a1; font-size:.8rem; }
+    .table-hover tbody tr:hover { background-color: rgba(255,255,255,0.05); cursor:pointer; }
 
     .rim-input {
       background-color: #0d1117;
@@ -110,129 +108,43 @@
       height: 500px;
     }
 
-    .cmd-text {
-      font-family: 'JetBrains Mono', monospace;
-      color: #00bc8c;
-    }
+    .cmd-text { font-family: 'JetBrains Mono', monospace; color:#00bc8c; }
+    .muted { opacity: .65; }
+    .badge-soft { background: rgba(46,204,113,.12); border:1px solid rgba(46,204,113,.35); color:#bff3df; }
 
     .guide-box {
       background-color: rgba(0,0,0,0.3);
       border-left: 4px solid #9b59b6;
-      padding: 15px;
-      margin-bottom: 15px;
+      padding: 14px;
+      margin-bottom: 14px;
     }
 
-    .status-line {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      color: #a1a1a1;
-      margin: 10px 0 0 0;
-    }
-
-    .help-line {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      color: #c7c7c7;
-      margin: 0 0 10px 0;
-      opacity: 0.9;
-    }
-
-    .error-box {
-      border: 1px solid #e74c3c;
-      background: rgba(231, 76, 60, 0.12);
-      padding: 10px 12px;
-      border-radius: 4px;
-      margin-top: 10px;
-      color: #e74c3c;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      display: none;
-    }
-
-    .badge-pill-soft {
-      background: rgba(0,0,0,0.25);
-      border: 1px solid #3c444d;
-      color: #d2d2d2;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .qty-btn {
-      border: 1px solid #4a545e;
-      background: #0d1117;
-      color: #00bc8c;
-      font-family: 'JetBrains Mono', monospace;
-      padding: 6px 10px;
-      border-radius: 4px;
-      margin-right: 6px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .qty-btn.active { background: #00bc8c; color: #001b14; font-weight: bold; }
-
-    .fav {
-      font-size: 1rem;
-      opacity: 0.85;
-      user-select: none;
-    }
-    .fav.on { color: #f1c40f; opacity: 1; }
-
-    /* Command builder */
-    .builder {
-      position: sticky;
-      bottom: 10px;
-      z-index: 50;
-    }
-
-    .builder-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .builder-cmd {
-      flex: 1 1 360px;
-      background: #0d1117;
-      border: 1px solid #4a545e;
-      border-radius: 4px;
-      padding: 10px 12px;
-      color: #00bc8c;
-      font-family: 'JetBrains Mono', monospace;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      overflow-x: auto;
-      white-space: nowrap;
-    }
-
-    .builder-btn {
-      border: 1px solid #4a545e;
-      background: #313a42;
-      color: #d2d2d2;
-      padding: 10px 14px;
-      border-radius: 4px;
-      cursor: pointer;
-      user-select: none;
-      font-family: 'JetBrains Mono', monospace;
-    }
-    .builder-btn:hover { background: #4a545e; color: #fff; }
-
-    .toast {
+    .toast-mini {
       position: fixed;
-      bottom: 16px;
-      right: 16px;
-      z-index: 99999;
-      background: rgba(0,0,0,0.85);
+      bottom: 18px;
+      right: 18px;
+      z-index: 10000;
+      background: rgba(0,0,0,.85);
       border: 1px solid #3c444d;
-      color: #00bc8c;
-      font-family: 'JetBrains Mono', monospace;
       padding: 10px 12px;
       border-radius: 6px;
       display: none;
-      max-width: 420px;
+      max-width: 360px;
     }
 
-    iframe { border: 0; }
+    .builder {
+      display:flex;
+      gap:10px;
+      align-items:stretch;
+      flex-wrap:wrap;
+    }
+    .builder .builder-input {
+      flex: 1 1 360px;
+      min-width: 260px;
+    }
+    .builder button {
+      white-space: nowrap;
+    }
   </style>
 </head>
 
@@ -240,664 +152,633 @@
   <nav class="navbar navbar-expand-md navbar-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">ASH RATED // COLONY COMMAND CONSOLE</a>
-      <div class="ml-auto">
-        <span class="badge badge-success p-2">SYSTEMS ONLINE</span>
+      <div class="ml-auto d-flex align-items-center" style="gap:10px;">
+        <span id="statusBadge" class="badge badge-success p-2">SYSTEMS ONLINE</span>
+        <span id="statusText" class="badge badge-soft p-2">BOOT: Awaiting data feeds…</span>
       </div>
     </div>
   </nav>
 
   <main class="container-fluid mt-4 px-lg-5">
+
+    <!-- Stream + Chat -->
     <div class="row">
       <div class="col-lg-9 mb-3">
         <div class="twitch-wrapper">
-          <iframe id="twitchPlayer" height="100%" width="100%" allowfullscreen="true"></iframe>
+          <iframe
+            id="twitchPlayer"
+            src=""
+            height="100%"
+            width="100%"
+            frameborder="0"
+            allowfullscreen="true">
+          </iframe>
         </div>
       </div>
       <div class="col-lg-3 mb-3">
         <div class="twitch-wrapper">
-          <iframe id="twitchChat" height="100%" width="100%"></iframe>
+          <iframe
+            id="twitchChat"
+            src=""
+            height="100%"
+            width="100%"
+            frameborder="0">
+          </iframe>
         </div>
       </div>
     </div>
 
+    <!-- Tabs -->
     <div class="d-flex flex-wrap mt-2">
-      <div class="btn-tab" data-tab="1">Inventory</div>
-      <div class="btn-tab" data-tab="2">Incidents</div>
-      <div class="btn-tab" data-tab="3">Genetics</div>
-      <div class="btn-tab" data-tab="4">Terminal</div>
-      <div class="btn-tab" data-tab="5">Manual</div>
+      <div class="btn-tab" id="tabBtn1">Inventory</div>
+      <div class="btn-tab" id="tabBtn2">Incidents</div>
+      <div class="btn-tab" id="tabBtn3">Genetics</div>
+      <div class="btn-tab" id="tabBtn4">Terminal</div>
+      <div class="btn-tab" id="tabBtn5">Manual</div>
     </div>
 
     <div class="rim-window">
-      <div id="helpLine" class="help-line">Click a row to auto-build + copy the command.</div>
 
+      <!-- Filters (hidden on manual) -->
       <div class="row mb-3" id="filterRow">
-        <div class="col-lg-6 mb-2">
+        <div class="col-md-8">
           <div class="input-group">
             <div class="input-group-prepend">
               <span class="input-group-text rim-input border-right-0">FILTER_QUERY:</span>
             </div>
-            <input type="text" id="searchBar" class="form-control rim-input" placeholder="Type to search...">
+            <input type="text" id="searchBar" class="form-control rim-input" placeholder="Type to search current tab…" />
           </div>
         </div>
-
-        <div class="col-lg-3 mb-2" id="priceRow">
+        <div class="col-md-4" id="priceBox">
           <div class="input-group">
             <div class="input-group-prepend">
               <span class="input-group-text rim-input border-right-0">$</span>
             </div>
-            <input type="number" id="priceMax" class="form-control rim-input" placeholder="Max Price">
-          </div>
-        </div>
-
-        <div class="col-lg-3 mb-2">
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text rim-input border-right-0">SORT</span>
-            </div>
-            <select id="sortSelect" class="form-control rim-input">
-              <option value="name-asc">Name A→Z</option>
-              <option value="name-desc">Name Z→A</option>
-              <option value="price-asc">Price low→high</option>
-              <option value="price-desc">Price high→low</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Inventory-only qty controls -->
-        <div class="col-12 mt-2" id="qtyRow" style="display:none;">
-          <div class="d-flex flex-wrap align-items-center">
-            <span class="badge badge-pill badge-pill-soft mr-2 p-2">QTY</span>
-            <div class="qty-btn" data-qty="1">1</div>
-            <div class="qty-btn" data-qty="5">5</div>
-            <div class="qty-btn" data-qty="10">10</div>
-            <div class="qty-btn" data-qty="25">25</div>
-            <div class="qty-btn" data-qty="50">50</div>
-            <div class="qty-btn" data-qty="100">100</div>
-            <div class="ml-2" style="min-width:220px;">
-              <input id="qtyCustom" class="form-control rim-input" type="number" min="1" placeholder="Custom qty (optional)">
-            </div>
-            <div class="ml-2 small opacity-75">Tip: click an item to copy <span class="cmd-text">!buy item qty</span></div>
-          </div>
-        </div>
-
-        <!-- Genetics action (traits vs remove trait vs race buy) -->
-        <div class="col-12 mt-2" id="genActionRow" style="display:none;">
-          <div class="d-flex flex-wrap align-items-center">
-            <span class="badge badge-pill badge-pill-soft mr-2 p-2">GENETICS ACTION</span>
-            <select id="genAction" class="form-control rim-input" style="max-width:320px;">
-              <option value="addTrait">Add Trait (!trait)</option>
-              <option value="removeTrait">Remove Trait (!removetrait)</option>
-              <option value="buyRace">Buy Race (!buy)</option>
-            </select>
-            <div class="ml-2 small opacity-75">Click a row to build the selected action.</div>
+            <input type="number" id="priceMax" class="form-control rim-input" placeholder="Max Price (optional)" />
           </div>
         </div>
       </div>
 
-      <div class="error-box" id="errorBox"></div>
-      <div class="status-line" id="statusLine">BOOT: Initializing…</div>
+      <!-- Command Builder -->
+      <div class="rim-window" style="margin-bottom:16px;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap:10px;">
+          <div>
+            <div class="text-uppercase muted" style="font-size:.78rem;">Command Builder</div>
+            <div class="muted" style="font-size:.85rem;">Click any row to auto-build a command. Then copy & paste into Twitch chat.</div>
+          </div>
+          <span class="badge badge-soft p-2">Tip: Use the Terminal tab to see command syntax</span>
+        </div>
+        <div class="builder mt-2">
+          <input id="builderInput" class="form-control rim-input builder-input" placeholder="Click a row to populate a command…" />
+          <button class="btn btn-sm btn-outline-light" id="copyBtn">Copy</button>
+          <button class="btn btn-sm btn-primary" id="copyOpenBtn">Copy & Open Twitch Chat</button>
+          <button class="btn btn-sm btn-outline-danger" id="clearBtn">Clear</button>
+        </div>
+        <div class="mt-2 muted small" id="builderHint">Waiting for selection…</div>
+      </div>
 
+      <!-- Live Leaderboards + Lookup -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <div class="rim-window">
+            <div class="d-flex align-items-center justify-content-between">
+              <h5 class="text-success mb-2">💰 Top 10 Richest</h5>
+              <span class="muted small" id="coinsUpdated">—</span>
+            </div>
+            <table class="table table-sm mb-0">
+              <thead><tr><th>Viewer</th><th>Coins</th></tr></thead>
+              <tbody id="coinsBoard"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <div class="rim-window">
+            <div class="d-flex align-items-center justify-content-between">
+              <h5 class="text-danger mb-2">🔥 Top 10 Karma</h5>
+              <span class="muted small" id="karmaUpdated">—</span>
+            </div>
+            <table class="table table-sm mb-0">
+              <thead><tr><th>Viewer</th><th>Karma</th></tr></thead>
+              <tbody id="karmaBoard"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="rim-window">
+        <h5 class="text-info mb-2">🔎 Viewer Lookup</h5>
+        <div class="row">
+          <div class="col-md-8">
+            <input type="text" id="viewerSearch" class="form-control rim-input" placeholder="Enter your Twitch username (e.g. AshRated)" />
+          </div>
+          <div class="col-md-4 mt-2 mt-md-0">
+            <button class="btn btn-sm btn-primary w-100" id="viewerLookupBtn">Check Stats</button>
+          </div>
+        </div>
+        <div id="viewerResult" class="mt-2 small muted">Type a name and press “Check Stats”.</div>
+      </div>
+
+      <!-- Display Area -->
       <div id="displayArea">
+        <!-- Inventory -->
         <div id="items" class="tab-panel">
           <table class="table table-hover">
-            <thead><tr><th style="width:44px;"></th><th>OBJECT_ID</th><th>MARKET_VALUE</th><th>CATEGORY</th></tr></thead>
+            <thead><tr><th>OBJECT_ID</th><th>PRICE</th><th>CATEGORY</th></tr></thead>
             <tbody class="list"></tbody>
           </table>
         </div>
 
-        <div id="events" class="tab-panel" style="display:none;">
+        <!-- Incidents -->
+        <div id="incidents" class="tab-panel" style="display:none;">
           <table class="table table-hover">
-            <thead><tr><th style="width:44px;"></th><th>INCIDENT_ID</th><th>THREAT_LEVEL_COST</th><th>KARMA</th></tr></thead>
+            <thead><tr><th>INCIDENT_ID</th><th>PRICE</th><th>KARMA</th></tr></thead>
             <tbody class="list"></tbody>
           </table>
         </div>
 
+        <!-- Genetics -->
         <div id="traits" class="tab-panel" style="display:none;">
           <table class="table table-hover">
-            <thead><tr><th style="width:44px;"></th><th>MOD_ID</th><th>FUNCTION</th><th>ADD_COST</th><th>REM_COST</th></tr></thead>
+            <thead><tr><th>MOD_ID</th><th>FUNCTION</th><th>ADD_COST</th><th>REM_COST</th></tr></thead>
             <tbody class="list"></tbody>
           </table>
         </div>
 
+        <!-- Terminal -->
         <div id="commands" class="tab-panel" style="display:none;">
           <table class="table table-hover">
-            <thead><tr><th style="width:44px;"></th><th>INPUT_STRING</th><th>OPERATION</th><th>ACCESS</th></tr></thead>
+            <thead><tr><th>INPUT_STRING</th><th>OPERATION</th><th>ACCESS</th></tr></thead>
             <tbody class="list"></tbody>
           </table>
         </div>
 
+        <!-- Manual -->
         <div id="manual" class="tab-panel" style="display:none;">
           <h2 class="text-uppercase mb-4" style="color:#9b59b6">Instructional Manual</h2>
           <div class="row">
             <div class="col-md-6">
               <div class="guide-box">
                 <h5 class="text-success">CREDIT ACCUMULATION</h5>
-                <p class="small">Watch time generates passive Silver. Check wallet with <span class="cmd-text">!bal</span>.</p>
+                <p class="small mb-0">Watch time generates passive Silver. Check wallet with <span class="cmd-text">!bal</span>.</p>
               </div>
               <div class="guide-box">
                 <h5 class="text-info">SUPPLY REQUISITION</h5>
-                <p class="small">Click any item to copy a ready-to-use command. Format: <span class="cmd-text">!buy [item] [qty]</span>.</p>
+                <p class="small mb-0">Items drop via trade pod. Format: <span class="cmd-text">!buy [item] [qty]</span>.</p>
               </div>
             </div>
             <div class="col-md-6">
               <div class="guide-box">
                 <h5 class="text-warning">COLONIST INTEGRATION</h5>
-                <p class="small">Enter queue: <span class="cmd-text">!joinqueue</span>. Check your pawn: <span class="cmd-text">!mypawnskills</span>.</p>
+                <p class="small mb-0">Enter the queue with <span class="cmd-text">!joinqueue</span>. Check your pawn with <span class="cmd-text">!mypawnskills</span>.</p>
               </div>
               <div class="guide-box">
                 <h5 class="text-danger">INCIDENT TRIGGER</h5>
-                <p class="small">Click any incident to copy: <span class="cmd-text">!buy [incident]</span>.</p>
+                <p class="small mb-0">Triggers events. Hostile incidents cost more. Format: <span class="cmd-text">!buy [incident]</span>.</p>
               </div>
             </div>
           </div>
+          <div class="mt-3 muted small">
+            Tip: Click any item/incident/trait/command on the other tabs to auto-fill the Command Builder.
+          </div>
         </div>
-      </div><!-- /displayArea -->
-    </div><!-- /rim-window -->
-
-    <!-- Command Builder -->
-    <div class="rim-window builder">
-      <div class="d-flex flex-wrap align-items-center justify-content-between mb-2">
-        <div class="help-line mb-0">COMMAND BUILDER (click a row to fill this)</div>
-        <div class="small opacity-75">Tip: use <span class="cmd-text">!bal</span> to check balance.</div>
       </div>
-
-      <div class="builder-row">
-        <div class="builder-cmd" id="builderCmd">Click an item/event/trait/command to build a command…</div>
-        <div class="builder-btn" id="copyBtn">COPY</div>
-        <a class="builder-btn" id="openChatBtn" target="_blank" rel="noopener noreferrer">OPEN TWITCH CHAT</a>
-        <div class="builder-btn" id="clearBtn">CLEAR</div>
-      </div>
-
-      <div class="status-line mt-2" id="builderMeta">—</div>
     </div>
 
-    <footer class="text-center pb-5 small opacity-50">
-      SYSTEM VERSION 4.0 // ASHRATED_OS
+    <footer class="text-center pb-5 small muted">
+      SYSTEM VERSION 3.2 // ASHRATED_OS
     </footer>
   </main>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast-mini" id="toast"></div>
 
-  <script type="text/javascript">
-    // ===== Twitch embed (auto parent) =====
-    (function initTwitchEmbeds() {
-      var host = window.location.hostname || "ashrated.github.io";
-      var parent = encodeURIComponent(host);
-
-      document.getElementById("twitchPlayer").src =
-        "https://player.twitch.tv/?channel=" + encodeURIComponent(TWITCH_CHANNEL) +
-        "&parent=" + parent + "&muted=false";
-
-      document.getElementById("twitchChat").src =
-        "https://www.twitch.tv/embed/" + encodeURIComponent(TWITCH_CHANNEL) +
-        "/chat?parent=" + parent + "&darkpopout=true";
-
-      document.getElementById("openChatBtn").href =
-        "https://www.twitch.tv/popout/" + encodeURIComponent(TWITCH_CHANNEL) + "/chat?popout=";
-    })();
-
-    // ===== Utility =====
-    var statusLine = document.getElementById("statusLine");
-    var errorBox = document.getElementById("errorBox");
-    var helpLine = document.getElementById("helpLine");
-
-    function setStatus(msg) { statusLine.textContent = msg; }
-    function showError(msg) { errorBox.textContent = msg; errorBox.style.display = "block"; }
-    function clearError() { errorBox.textContent = ""; errorBox.style.display = "none"; }
-
-    function toNumber(x) {
-      var n = Number(x);
-      return isFinite(n) ? n : 0;
+  <script>
+    // =========================
+    // UI Helpers
+    // =========================
+    function setStatus(text, ok=true) {
+      $("#statusText").text(text);
+      $("#statusBadge").toggleClass("badge-success", ok).toggleClass("badge-danger", !ok);
+      $("#statusBadge").text(ok ? "SYSTEMS ONLINE" : "SYSTEM ERROR");
     }
 
     function toast(msg) {
-      var t = document.getElementById("toast");
-      t.textContent = msg;
-      t.style.display = "block";
-      clearTimeout(toast._timer);
-      toast._timer = setTimeout(function(){ t.style.display = "none"; }, 1800);
+      const t = $("#toast");
+      t.text(msg).stop(true,true).fadeIn(120);
+      setTimeout(() => t.fadeOut(250), 1400);
     }
 
-    function safeCopy(text) {
-      if (!text) return;
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function() {
-          toast("Copied: " + text);
-        }).catch(function() {
-          legacyCopy(text);
-        });
-      } else {
-        legacyCopy(text);
+    function setBuilder(cmdText, hintText) {
+      $("#builderInput").val(cmdText);
+      $("#builderHint").text(hintText || "Command ready. Copy & paste into chat.");
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        toast("Copied to clipboard!");
+      } catch {
+        // fallback
+        const inp = document.getElementById("builderInput");
+        inp.select();
+        document.execCommand("copy");
+        toast("Copied (fallback)!");
       }
     }
-    function legacyCopy(text) {
-      var ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); toast("Copied: " + text); }
-      catch(e) { toast("Copy failed — select + copy manually."); }
-      document.body.removeChild(ta);
+
+    // Open Twitch popout chat in a new tab (easy paste)
+    function openTwitchChat() {
+      window.open(`https://www.twitch.tv/popout/${twitchChannel}/chat?popout=`, "_blank");
     }
 
-    // ===== Favourites (localStorage) =====
-    function favKey(tab, id) { return "ashrated_favs_" + tab + "_" + id; }
-    function isFav(tab, id) { return localStorage.getItem(favKey(tab,id)) === "1"; }
-    function setFav(tab, id, on) { localStorage.setItem(favKey(tab,id), on ? "1" : "0"); }
+    // =========================
+    // Tabs
+    // =========================
+    let activeTab = 1; // 1 items, 2 incidents, 3 genetics, 4 terminal, 5 manual
 
-    // ===== Command builder =====
-    var builderCmd = document.getElementById("builderCmd");
-    var builderMeta = document.getElementById("builderMeta");
+    function showTab(tab) {
+      activeTab = tab;
 
-    function setBuilder(command, meta) {
-      builderCmd.textContent = command || "";
-      builderMeta.textContent = meta || "—";
-      if (command) safeCopy(command);
-    }
+      // Buttons
+      $("#tabBtn1").attr("class", "btn-tab" + (tab===1 ? " active-1" : ""));
+      $("#tabBtn2").attr("class", "btn-tab" + (tab===2 ? " active-2" : ""));
+      $("#tabBtn3").attr("class", "btn-tab" + (tab===3 ? " active-3" : ""));
+      $("#tabBtn4").attr("class", "btn-tab" + (tab===4 ? " active-4" : ""));
+      $("#tabBtn5").attr("class", "btn-tab" + (tab===5 ? " active-5" : ""));
 
-    document.getElementById("copyBtn").addEventListener("click", function() {
-      safeCopy(builderCmd.textContent);
-    });
-    document.getElementById("clearBtn").addEventListener("click", function() {
-      builderCmd.textContent = "Click an item/event/trait/command to build a command…";
-      builderMeta.textContent = "—";
-    });
+      // Panels
+      $("#items").toggle(tab===1);
+      $("#incidents").toggle(tab===2);
+      $("#traits").toggle(tab===3);
+      $("#commands").toggle(tab===4);
+      $("#manual").toggle(tab===5);
 
-    // ===== Tabs =====
-    var selectedTab = 1;
-    var panels = { 1: "items", 2: "events", 3: "traits", 4: "commands", 5: "manual" };
+      // Filters
+      $("#filterRow").toggle(tab !== 5);
+      $("#priceBox").toggle(tab !== 4 && tab !== 5); // terminal doesn't use max-price filter nicely
 
-    function setHelpForTab(n) {
-      if (n === 1) helpLine.textContent = "Inventory: set a QTY, then click an item to copy “!buy item qty”.";
-      else if (n === 2) helpLine.textContent = "Incidents: click an incident to copy “!buy incident”.";
-      else if (n === 3) helpLine.textContent = "Genetics: choose an action (add/remove trait or buy race), then click a row to copy.";
-      else if (n === 4) helpLine.textContent = "Terminal: click a command to copy it. Some require parameters.";
-      else helpLine.textContent = "Manual: quick guide + example commands.";
-    }
+      // Reset search on tab switch (prevents confusion)
+      $("#searchBar").val("");
+      $("#priceMax").val("");
 
-    function setTab(n) {
-      selectedTab = n;
-
-      // button styles
-      var btns = document.querySelectorAll(".btn-tab");
-      for (var i = 0; i < btns.length; i++) {
-        var tab = parseInt(btns[i].getAttribute("data-tab"), 10);
-        btns[i].classList.remove("active-1","active-2","active-3","active-4","active-5");
-        if (tab === n) btns[i].classList.add("active-" + n);
-      }
-
-      // panels
-      for (var k in panels) {
-        if (!panels.hasOwnProperty(k)) continue;
-        var el = document.getElementById(panels[k]);
-        if (!el) continue;
-        el.style.display = (parseInt(k, 10) === n) ? "" : "none";
-      }
-
-      // filter visibility
-      var filterRow = document.getElementById("filterRow");
-      var priceRow = document.getElementById("priceRow");
-      var qtyRow = document.getElementById("qtyRow");
-      var genActionRow = document.getElementById("genActionRow");
-
-      if (n === 5) {
-        filterRow.style.display = "none";
-      } else {
-        filterRow.style.display = "";
-        priceRow.style.display = (n === 4) ? "none" : "";
-      }
-
-      qtyRow.style.display = (n === 1) ? "" : "none";
-      genActionRow.style.display = (n === 3) ? "" : "none";
-
-      setHelpForTab(n);
       applyFiltersToActive();
-      applySortToActive();
+      applySearchToActive("");
     }
 
-    var tabButtons = document.querySelectorAll(".btn-tab");
-    for (var b = 0; b < tabButtons.length; b++) {
-      tabButtons[b].addEventListener("click", function() {
-        setTab(parseInt(this.getAttribute("data-tab"), 10));
-      });
+    $("#tabBtn1").on("click", () => showTab(1));
+    $("#tabBtn2").on("click", () => showTab(2));
+    $("#tabBtn3").on("click", () => showTab(3));
+    $("#tabBtn4").on("click", () => showTab(4));
+    $("#tabBtn5").on("click", () => showTab(5));
+
+    // =========================
+    // Data Loading Utilities
+    // =========================
+    async function loadJSON(url) {
+      const res = await fetch(url + "?cb=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      return await res.json();
     }
 
-    // ===== Qty controls =====
-    var selectedQty = 1;
-    function getQty() {
-      var custom = document.getElementById("qtyCustom").value;
-      if (custom !== "" && toNumber(custom) > 0) return toNumber(custom);
-      return selectedQty;
-    }
-    function setQtyButtonActive() {
-      var btns = document.querySelectorAll(".qty-btn");
-      for (var i = 0; i < btns.length; i++) {
-        var q = toNumber(btns[i].getAttribute("data-qty"));
-        btns[i].classList.toggle("active", q === selectedQty);
-      }
-    }
-    var qtyBtns = document.querySelectorAll(".qty-btn");
-    for (var qb = 0; qb < qtyBtns.length; qb++) {
-      qtyBtns[qb].addEventListener("click", function() {
-        selectedQty = toNumber(this.getAttribute("data-qty"));
-        document.getElementById("qtyCustom").value = "";
-        setQtyButtonActive();
-      });
-    }
-    document.getElementById("qtyCustom").addEventListener("input", function() {
-      // if custom used, no preset is active
-      var btns = document.querySelectorAll(".qty-btn");
-      for (var i = 0; i < btns.length; i++) btns[i].classList.remove("active");
-    });
-    setQtyButtonActive();
-
-    // ===== Lists =====
-    var itemList = null, eventList = null, traitList = null, commandList = null;
+    // list.js instances
+    let itemList = null;
+    let incidentList = null;
+    let traitList = null;
+    let commandList = null;
 
     function getActiveList() {
-      if (selectedTab === 1) return itemList;
-      if (selectedTab === 2) return eventList;
-      if (selectedTab === 3) return traitList;
-      if (selectedTab === 4) return commandList;
+      if (activeTab === 1) return itemList;
+      if (activeTab === 2) return incidentList;
+      if (activeTab === 3) return traitList;
+      if (activeTab === 4) return commandList;
       return null;
     }
 
+    function applySearchToActive(q) {
+      const L = getActiveList();
+      if (!L) return;
+      L.search(q);
+    }
+
     function applyFiltersToActive() {
-      var list = getActiveList();
-      if (!list) return;
+      const L = getActiveList();
+      if (!L) return;
 
-      var search = (document.getElementById("searchBar").value || "").trim();
-      var maxRaw = document.getElementById("priceMax").value;
-      var max = (maxRaw === "" ? null : toNumber(maxRaw));
+      const maxStr = ($("#priceMax").val() || "").trim();
+      const max = maxStr === "" ? null : Number(maxStr);
 
-      list.search(search);
-
-      // No price filtering for Terminal
-      if (selectedTab === 4 || max === null) {
-        list.filter();
+      // If max isn't valid, ignore filter
+      if (max !== null && (Number.isNaN(max) || max < 0)) {
+        L.filter(); // clears filter
         return;
       }
 
-      list.filter(function(item) {
-        var v = item.values();
-        var p = (v.price !== undefined) ? toNumber(v.price)
-              : (v.add !== undefined) ? toNumber(v.add)
-              : 0;
-        return p <= max;
+      // Only apply price filter on tabs with "price" column
+      if (activeTab === 1 || activeTab === 2 || activeTab === 3) {
+        L.filter(item => {
+          const v = item.values();
+          // item tab uses v.price
+          // incident tab uses v.price
+          // traits tab uses v.add (add cost) but we map it also into v.price for filtering convenience
+          const p = Number(v.price || 0);
+          return (max === null) ? true : (p <= max);
+        });
+      } else {
+        L.filter(); // clear filters for other tabs
+      }
+    }
+
+    // =========================
+    // Row click -> Command Builder
+    // =========================
+    function wireRowClicks(containerId, mode) {
+      // mode: items/incidents/traits/commands
+      $(`#${containerId} tbody`).on("click", "tr", function() {
+        const $tr = $(this);
+        const nameCell = $tr.find(".name,.abr,.usage").first().text().trim();
+        const priceCell = $tr.find(".price,.add").first().text().trim();
+
+        let cmd = "";
+        let hint = "";
+
+        if (mode === "items") {
+          // Best guess: !buy item qty
+          cmd = `!buy ${nameCell} 1`;
+          hint = `Item selected (${priceCell}). Edit quantity if needed, then copy.`;
+        } else if (mode === "incidents") {
+          cmd = `!buy ${nameCell}`;
+          hint = `Incident selected (${priceCell}). Copy and run in chat.`;
+        } else if (mode === "traits") {
+          // Traits usually need a trait command, but you can customize this format if your bot expects something else
+          // Using a safe, obvious placeholder:
+          cmd = `!trait ${nameCell}`;
+          hint = `Genetics selected. If your integration uses a different command, adjust this format.`;
+        } else if (mode === "commands") {
+          // If usage exists, use it directly
+          cmd = nameCell;
+          hint = `Terminal command selected. Copy and run in chat.`;
+        }
+
+        setBuilder(cmd, hint);
       });
     }
 
-    document.getElementById("searchBar").addEventListener("keyup", applyFiltersToActive);
-    document.getElementById("priceMax").addEventListener("keyup", applyFiltersToActive);
-    document.getElementById("priceMax").addEventListener("change", applyFiltersToActive);
+    // =========================
+    // ViewerData: Leaderboards + Lookup
+    // =========================
+    async function loadViewerData() {
+      try {
+        const res = await fetch(viewerDataURL + "?cb=" + Date.now(), { cache: "no-store" });
+        const data = await res.json();
+        if (!data || !data.viewers) return;
 
-    // ===== Sorting =====
-    function applySortToActive() {
-      var list = getActiveList();
-      if (!list) return;
+        const viewers = Array.isArray(data.viewers) ? data.viewers : [];
 
-      var mode = document.getElementById("sortSelect").value;
+        const topCoins = [...viewers].sort((a,b) => (b.coins||0) - (a.coins||0)).slice(0,10);
+        const topKarma = [...viewers].sort((a,b) => (b.karma||0) - (a.karma||0)).slice(0,10);
 
-      if (mode === "name-asc") list.sort("name", { order: "asc" });
-      else if (mode === "name-desc") list.sort("name", { order: "desc" });
-      else if (mode === "price-asc") list.sort("price", { order: "asc" });
-      else if (mode === "price-desc") list.sort("price", { order: "desc" });
-    }
-    document.getElementById("sortSelect").addEventListener("change", function() {
-      applySortToActive();
-    });
+        $("#coinsBoard").html(topCoins.map(v => `<tr><td>${escapeHtml(v.username||"")}</td><td>${Number(v.coins||0)}</td></tr>`).join(""));
+        $("#karmaBoard").html(topKarma.map(v => `<tr><td>${escapeHtml(v.username||"")}</td><td>${Number(v.karma||0)}</td></tr>`).join(""));
 
-    // ===== Load JSON =====
-    function loadJSON(url, onOk) {
-      return $.getJSON(url)
-        .done(onOk)
-        .fail(function(xhr) {
-          var code = (xhr && xhr.status) ? ("HTTP " + xhr.status) : "Network/blocked";
-          showError("Failed to load: " + url + " (" + code + ")");
-          setStatus("SYSTEM: One or more feeds failed to load.");
-        });
+        const now = new Date();
+        $("#coinsUpdated").text(`Updated ${now.toLocaleTimeString()}`);
+        $("#karmaUpdated").text(`Updated ${now.toLocaleTimeString()}`);
+      } catch (e) {
+        // keep quiet, just log
+        console.log("ViewerData load error:", e);
+      }
     }
 
-    // ===== Row click handlers (build commands) =====
-    function wireRowClicks(containerId, tabName, buildFn) {
-      var root = document.getElementById(containerId);
-      root.addEventListener("click", function(e) {
-        // favourite click
-        if (e.target && e.target.classList && e.target.classList.contains("fav")) {
-          e.stopPropagation();
-          var id = e.target.getAttribute("data-id");
-          var on = !isFav(tabName, id);
-          setFav(tabName, id, on);
-          e.target.classList.toggle("on", on);
-          e.target.textContent = on ? "★" : "☆";
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+    }
+
+    async function lookupViewer() {
+      const name = ($("#viewerSearch").val() || "").trim().toLowerCase();
+      if (!name) {
+        $("#viewerResult").text("Please enter a username.");
+        return;
+      }
+
+      try {
+        const res = await fetch(viewerDataURL + "?cb=" + Date.now(), { cache: "no-store" });
+        const data = await res.json();
+        if (!data || !data.viewers) {
+          $("#viewerResult").text("Viewer data not available yet.");
           return;
         }
 
-        var tr = e.target.closest("tr");
-        if (!tr) return;
+        const viewers = Array.isArray(data.viewers) ? data.viewers : [];
+        const v = viewers.find(x => (x.username||"").toLowerCase() === name);
 
-        var id = tr.getAttribute("data-id");
-        if (!id) return;
+        if (!v) {
+          $("#viewerResult").text("User not found in the colony database yet (try chatting once).");
+          return;
+        }
 
-        buildFn(tr, id);
-      });
+        const pawn = v.pawnName || v.pawn || v.colonist || "Not assigned";
+        $("#viewerResult").html(
+          `Viewer: <span class="cmd-text">${escapeHtml(v.username)}</span><br>` +
+          `💰 Coins: <b>${Number(v.coins||0)}</b><br>` +
+          `🔥 Karma: <b>${Number(v.karma||0)}</b><br>` +
+          `🧑 Pawn: <b>${escapeHtml(pawn)}</b>`
+        );
+      } catch (e) {
+        $("#viewerResult").text("Lookup failed. Check console for details.");
+        console.log(e);
+      }
     }
 
-    function favCell(tabName, id) {
-      var on = isFav(tabName, id);
-      return '<td class="fav ' + (on ? 'on' : '') + '" data-id="' + id + '">' + (on ? '★' : '☆') + '</td>';
-    }
+    $("#viewerLookupBtn").on("click", lookupViewer);
+    $("#viewerSearch").on("keydown", function(e){ if(e.key==="Enter") lookupViewer(); });
 
-    // ===== Boot =====
-    clearError();
-    setStatus("BOOT: Connecting to GitHub data feeds…");
+    // =========================
+    // Boot: Load Lists
+    // =========================
+    async function boot() {
+      // Twitch embeds
+      $("#twitchPlayer").attr("src", `https://player.twitch.tv/?channel=${twitchChannel}&parent=${twitchParent}&muted=false`);
+      $("#twitchChat").attr("src", `https://www.twitch.tv/embed/${twitchChannel}/chat?parent=${twitchParent}&darkpopout`);
 
-    // Inventory
-    setStatus("BOOT: Loading Inventory…");
-    loadJSON(itemListURL, function(itemsData) {
-      var items = (itemsData && itemsData.items) ? itemsData.items : [];
-      items = items.filter(function(i) { return toNumber(i.price) > 0; });
+      setStatus("BOOT: Loading Inventory…");
+      try {
+        const data = await loadJSON(itemListURL);
+        const items = (data && Array.isArray(data.items)) ? data.items : [];
 
-      // Ensure fields exist for sorting/searching
-      for (var i = 0; i < items.length; i++) {
-        if (items[i].name === undefined) items[i].name = items[i].abr || "";
+        // normalize
+        const normalized = items
+          .filter(i => Number(i.price || 0) > 0)
+          .map(i => ({
+            name: i.abr || i.name || i.defName || "",
+            abr:  i.abr || i.name || i.defName || "",
+            price: Number(i.price || 0),
+            category: i.category || i.type || "—"
+          }));
+
+        itemList = new List("items", {
+          valueNames: ["abr","price","category","name"],
+          item: `<tr>
+                  <td class="abr font-weight-bold"></td>
+                  <td class="price text-success"></td>
+                  <td class="category muted"></td>
+                </tr>`
+        }, normalized);
+
+      } catch (e) {
+        console.log(e);
+        setStatus("ERROR: Inventory feed failed to load.", false);
       }
 
-      itemList = new List("items", {
-        valueNames: ["name","abr","price","category"],
-        item:
-          '<tr data-id="" class="">' +
-            '<td class="fav"></td>' +
-            '<td class="abr font-weight-bold"></td>' +
-            '<td class="price text-success"></td>' +
-            '<td class="category opacity-50"></td>' +
-          '</tr>'
-      }, items);
+      setStatus("BOOT: Loading Incidents…");
+      try {
+        const data = await loadJSON(incidentListURL);
+        const inc = (data && Array.isArray(data.incitems)) ? data.incitems : [];
 
-      // Inject fav cells + data-id after list renders
-      for (var j = 0; j < itemList.items.length; j++) {
-        var v = itemList.items[j].values();
-        var id = (v.abr || v.name || ("item_" + j));
-        var el = itemList.items[j].elm;
-        el.setAttribute("data-id", id);
-        el.children[0].outerHTML = favCell("items", id);
+        const normalized = inc
+          .filter(i => Number(i.price || 0) > 0)
+          .map(i => ({
+            abr: i.abr || i.name || i.defName || "",
+            name: i.abr || i.name || i.defName || "",
+            price: Number(i.price || 0),
+            karmatype: i.karmatype || i.karmaType || i.karma || "—"
+          }));
+
+        incidentList = new List("incidents", {
+          valueNames: ["abr","price","karmatype","name"],
+          item: `<tr>
+                  <td class="abr font-weight-bold"></td>
+                  <td class="price text-danger"></td>
+                  <td class="karmatype"></td>
+                </tr>`
+        }, normalized);
+
+      } catch (e) {
+        console.log(e);
+        setStatus("ERROR: Incidents feed failed to load.", false);
       }
 
-      wireRowClicks("items", "items", function(tr, id) {
-        var qty = getQty();
-        var cmd = CMD.buy + " " + id + " " + qty;
-        setBuilder(cmd, "Inventory → " + id + " (qty " + qty + ")");
-      });
+      setStatus("BOOT: Loading Genetics…");
+      try {
+        const data = await loadJSON(shopExtURL);
 
-      applyFiltersToActive();
-      applySortToActive();
-      setStatus("BOOT: Inventory online.");
-    });
+        const combined = [];
 
-    // Incidents
-    setStatus("BOOT: Loading Incidents…");
-    loadJSON(eventListURL, function(eventsData) {
-      var inc = (eventsData && eventsData.incitems) ? eventsData.incitems : [];
-      inc = inc.filter(function(i) { return toNumber(i.price) > 0; });
-
-      for (var i = 0; i < inc.length; i++) {
-        if (inc[i].name === undefined) inc[i].name = inc[i].abr || "";
-      }
-
-      eventList = new List("events", {
-        valueNames: ["name","abr","price","karmatype"],
-        item:
-          '<tr data-id="">' +
-            '<td class="fav"></td>' +
-            '<td class="abr font-weight-bold"></td>' +
-            '<td class="price text-danger"></td>' +
-            '<td class="karmatype"></td>' +
-          '</tr>'
-      }, inc);
-
-      for (var j = 0; j < eventList.items.length; j++) {
-        var v = eventList.items[j].values();
-        var id = (v.abr || v.name || ("event_" + j));
-        var el = eventList.items[j].elm;
-        el.setAttribute("data-id", id);
-        el.children[0].outerHTML = favCell("events", id);
-      }
-
-      wireRowClicks("events", "events", function(tr, id) {
-        var cmd = CMD.buy + " " + id;
-        setBuilder(cmd, "Incident → " + id);
-      });
-
-      applyFiltersToActive();
-      applySortToActive();
-      setStatus("BOOT: Incidents online.");
-    });
-
-    // Genetics (traits + races)
-    setStatus("BOOT: Loading Genetics…");
-    loadJSON(shopExtURL, function(ext) {
-      var combined = [];
-
-      if (ext && ext.traits && ext.traits.length) {
-        for (var i = 0; i < ext.traits.length; i++) {
-          var t = ext.traits[i];
-          combined.push({
-            type: "trait",
-            id: (t.name || t.defName || ("trait_" + i)),
-            name: (t.defName || t.name || ""),
-            desc: (t.description || ""),
-            add: toNumber(t.addPrice),
-            rem: toNumber(t.removePrice),
-            price: toNumber(t.addPrice) // for sorting/filtering
+        // Traits
+        if (data && Array.isArray(data.traits)) {
+          data.traits.forEach(t => {
+            combined.push({
+              name: t.defName || t.name || "",
+              desc: t.description || "",
+              add: Number(t.addPrice || 0),
+              rem: Number(t.removePrice || 0),
+              // For filtering by price, treat "price" as add cost
+              price: Number(t.addPrice || 0)
+            });
           });
         }
-      }
 
-      if (ext && ext.races && ext.races.length) {
-        for (var r = 0; r < ext.races.length; r++) {
-          var race = ext.races[r];
-          if (race && race.enabled) {
+        // Races (enabled)
+        if (data && Array.isArray(data.races)) {
+          data.races.filter(r => r.enabled).forEach(r => {
             combined.push({
-              type: "race",
-              id: (race.name || race.defName || ("race_" + r)),
-              name: (race.defName || race.name || "") + " (Race)",
-              desc: (race.description || ""),
-              add: toNumber(race.price),
+              name: (r.defName || r.name || "") + " (Race)",
+              desc: r.description || "",
+              add: Number(r.price || 0),
               rem: "N/A",
-              price: toNumber(race.price)
+              price: Number(r.price || 0)
             });
-          }
+          });
         }
+
+        traitList = new List("traits", {
+          valueNames: ["name","desc","add","rem","price"],
+          item: `<tr>
+                  <td class="name text-warning font-weight-bold"></td>
+                  <td class="desc small"></td>
+                  <td class="add"></td>
+                  <td class="rem"></td>
+                </tr>`
+        }, combined);
+
+      } catch (e) {
+        console.log(e);
+        setStatus("ERROR: Genetics feed failed to load.", false);
       }
 
-      traitList = new List("traits", {
-        valueNames: ["type","id","name","desc","add","rem","price"],
-        item:
-          '<tr data-id="" data-type="">' +
-            '<td class="fav"></td>' +
-            '<td class="name text-warning font-weight-bold"></td>' +
-            '<td class="desc small"></td>' +
-            '<td class="add"></td>' +
-            '<td class="rem"></td>' +
-          '</tr>'
-      }, combined);
+      setStatus("BOOT: Loading Terminal Commands…");
+      try {
+        const cmds = await loadJSON(commandsURL);
+        const arr = Array.isArray(cmds) ? cmds : [];
 
-      for (var j = 0; j < traitList.items.length; j++) {
-        var v = traitList.items[j].values();
-        var id = v.id || ("gen_" + j);
-        var el = traitList.items[j].elm;
-        el.setAttribute("data-id", id);
-        el.setAttribute("data-type", v.type || "");
-        el.children[0].outerHTML = favCell("traits", (v.type || "gen") + "_" + id);
+        // normalize for list.js
+        arr.forEach(c => {
+          c.name = c.usage || c.name || "";
+          c.price = 0;
+        });
+
+        commandList = new List("commands", {
+          valueNames: ["name","usage","description","userLevel","price"],
+          item: `<tr>
+                  <td class="usage cmd-text"></td>
+                  <td class="description small"></td>
+                  <td class="userLevel font-weight-bold"></td>
+                </tr>`
+        }, arr);
+
+      } catch (e) {
+        console.log(e);
+        setStatus("ERROR: Commands feed failed to load.", false);
       }
 
-      wireRowClicks("traits", "traits", function(tr, id) {
-        var type = tr.getAttribute("data-type") || "trait";
-        var action = document.getElementById("genAction").value;
+      // Wire row clicks for command builder
+      wireRowClicks("items", "items");
+      wireRowClicks("incidents", "incidents");
+      wireRowClicks("traits", "traits");
+      wireRowClicks("commands", "commands");
 
-        // If user chooses "buyRace" but clicks a trait, we still build the selected action
-        // (so it behaves predictably).
-        var cmd = "";
-        if (action === "addTrait") cmd = CMD.addTrait + " " + id;
-        else if (action === "removeTrait") cmd = CMD.removeTrait + " " + id;
-        else cmd = CMD.buyRace + " " + id;
-
-        var label = (action === "addTrait") ? "Add Trait"
-                  : (action === "removeTrait") ? "Remove Trait"
-                  : "Buy Race";
-
-        setBuilder(cmd, "Genetics (" + type + ") → " + label + " → " + id);
+      // Search + Max price filter
+      $("#searchBar").on("keyup", function() {
+        applySearchToActive($(this).val() || "");
+      });
+      $("#priceMax").on("keyup change", function() {
+        applyFiltersToActive();
       });
 
-      applyFiltersToActive();
-      applySortToActive();
-      setStatus("BOOT: Genetics online.");
-    });
-
-    // Commands
-    setStatus("BOOT: Loading Terminal Commands…");
-    loadJSON(commandsURL, function(cmds) {
-      var arr = Array.isArray(cmds) ? cmds : [];
-
-      // Normalize for list.js fields
-      for (var i = 0; i < arr.length; i++) {
-        arr[i].name = arr[i].usage || arr[i].name || "";
-        arr[i].price = 0; // allow sorting, harmless
-      }
-
-      commandList = new List("commands", {
-        valueNames: ["name","usage","description","userLevel","price"],
-        item:
-          '<tr data-id="">' +
-            '<td class="fav"></td>' +
-            '<td class="usage cmd-text"></td>' +
-            '<td class="description small"></td>' +
-            '<td class="userLevel font-weight-bold"></td>' +
-          '</tr>'
-      }, arr);
-
-      for (var j = 0; j < commandList.items.length; j++) {
-        var v = commandList.items[j].values();
-        var id = (v.usage || ("cmd_" + j));
-        var el = commandList.items[j].elm;
-        el.setAttribute("data-id", id);
-        el.children[0].outerHTML = favCell("commands", id);
-      }
-
-      wireRowClicks("commands", "commands", function(tr, id) {
-        setBuilder(id, "Terminal Command → " + id);
+      // Builder buttons
+      $("#copyBtn").on("click", async () => {
+        const val = $("#builderInput").val() || "";
+        if (!val.trim()) return toast("Nothing to copy.");
+        await copyToClipboard(val);
       });
 
-      applyFiltersToActive();
-      applySortToActive();
+      $("#copyOpenBtn").on("click", async () => {
+        const val = $("#builderInput").val() || "";
+        if (!val.trim()) return toast("Nothing to copy.");
+        await copyToClipboard(val);
+        openTwitchChat();
+      });
+
+      $("#clearBtn").on("click", () => {
+        setBuilder("", "Waiting for selection…");
+      });
+
+      // Start on Inventory tab
+      showTab(1);
+
+      // Start leaderboards
+      loadViewerData();
+      setInterval(loadViewerData, 5000);
+
       setStatus("SYSTEM: Data feeds online. Ready.");
-    });
+    }
 
-    // Set default tab after initial handlers wired
-    setTab(1);
+    // Boot
+    boot();
   </script>
 </body>
 </html>
